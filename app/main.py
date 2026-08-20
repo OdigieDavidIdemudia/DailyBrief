@@ -1,3 +1,4 @@
+from app.downtime_report import build_downtime_docx
 import uuid
 import os
 import shutil
