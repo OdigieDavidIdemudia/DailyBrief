@@ -1151,11 +1151,6 @@ async def api_downtime_export(req: ExportDowntimeRequest, current_user: UserSess
     except Exception as e:
         print("EXPORT ERROR:", e)
         raise HTTPException(status_code=500, detail=str(e))
-        path=docx_path,
-        filename=os.path.basename(docx_path),
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
-
 @app.get("/api/downtime/reports", response_model=List[DowntimeReportResponse])
 async def api_downtime_reports(current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
     user = current_user
