@@ -1112,45 +1112,45 @@ async def api_downtime_chat(req: GenerateDowntimeDraftRequest, current_user: Use
 
 @app.post("/api/downtime/export")
 async def api_downtime_export(req: ExportDowntimeRequest, current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = current_user
-
-    # Save to db
-    report = db.query(DowntimeReportModel).filter(DowntimeReportModel.downtime_id == req.downtime_id).first()
-    if not report:
-        report = DowntimeReportModel(
-            id=str(uuid.uuid4()),
-            user_id=user.id,
-            downtime_id=req.downtime_id
-        )
-        db.add(report)
-    
-    report.start_date = req.start_date
-    report.start_time = req.start_time
-    report.end_date = req.end_date
-    report.end_time = req.end_time
-    report.duration = req.duration
-    report.system_affected = req.system_affected
-    report.severity = req.severity
-    report.reported_by = req.reported_by
-    report.position = req.position
-    
-    report.impact_summary = req.impact_summary
-    report.detection_and_notification = req.detection_and_notification
-    report.root_cause_analysis = req.root_cause_analysis
-    report.mitigation_and_recovery = req.mitigation_and_recovery
-    report.preventive_measures = req.preventive_measures
-    report.internal_communication = req.internal_communication
-    report.external_communication = req.external_communication
-    report.resource = req.resource
-    
-    db.commit()
-
-    # Generate DOCX
-    from app.downtime_report import build_downtime_docx
-    data = req.dict()
-    docx_path = build_downtime_docx(data)
-    
-    return FileResponse(
+    try:
+        user = current_user
+        
+        report = db.query(DowntimeReportModel).filter(DowntimeReportModel.downtime_id == req.downtime_id).first()
+        if not report:
+            report = DowntimeReportModel(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                downtime_id=req.downtime_id
+            )
+            db.add(report)
+        
+        report.start_date = req.start_date
+        report.start_time = req.start_time
+        report.end_date = req.end_date
+        report.end_time = req.end_time
+        report.duration = req.duration
+        report.system_affected = req.system_affected
+        report.severity = req.severity
+        report.reported_by = req.reported_by
+        report.position = req.position
+        
+        report.impact_summary = req.impact_summary
+        report.detection_and_notification = req.detection_and_notification
+        report.root_cause_analysis = req.root_cause_analysis
+        report.mitigation_and_recovery = req.mitigation_and_recovery
+        report.preventive_measures = req.preventive_measures
+        report.internal_communication = req.internal_communication
+        report.external_communication = req.external_communication
+        report.resource = req.resource
+        
+        db.commit()
+        
+        out_path = build_downtime_docx(req.dict())
+        
+        return FileResponse(out_path, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=os.path.basename(out_path))
+    except Exception as e:
+        print("EXPORT ERROR:", e)
+        raise HTTPException(status_code=500, detail=str(e))
         path=docx_path,
         filename=os.path.basename(docx_path),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
