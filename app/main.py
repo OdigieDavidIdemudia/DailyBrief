@@ -1174,5 +1174,4 @@ async def serve_static_root_files(filename: str):
     # If HTML request and file not found, fall back to /
     if filename.endswith(".html"):
         return RedirectResponse(url="/")
-    raise HTTPException(status_code=404, detail="File not found")   
- 
+    raise HTTPException(status_code=404, detail="File not found") 
