@@ -1106,7 +1106,7 @@ async def api_downtime_chat(req: GenerateDowntimeDraftRequest, current_user: Use
     result = await generate_downtime_draft(req.brief, history)
     
     if "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        return {"status": "complete", "draft": {"impact_summary": "DEBUG ERROR: " + str(result["error"]), "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}}
         
     return result
 

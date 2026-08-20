@@ -31,7 +31,7 @@ class MagnitudeAI:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
             
             try:
-                async with httpx.AsyncClient(timeout=30.0) as client:
+                async with httpx.AsyncClient(timeout=90.0) as client:
                     response = await client.post(url, json=payload)
                     
                     if response.status_code == 429:
