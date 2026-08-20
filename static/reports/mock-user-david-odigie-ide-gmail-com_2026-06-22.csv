@@ -1,0 +1,13 @@
+Date,Task_ID,Category,Task_Title,Priority,Status,Summary,Challenges,Critical_Blocker
+2026-06-22,TSK-001,Monthly,Local Account Review,Low,Pending,,,FALSE
+2026-06-22,TSK-002,Personal,Configuration  Review - Rwanda,High,Pending,,,FALSE
+2026-06-22,TSK-003,Personal,Forcepoint deployment to rwanda,High,Pending,,,FALSE
+2026-06-22,TSK-004,Personal,Internet Access Group Remediation,High,Pending,,,FALSE
+2026-06-22,TSK-005,Personal,Cimtrak Installation,Critical,Pending,,,FALSE
+2026-06-22,TSK-006,Personal,Finacle App logs,Critical,Pending,,,FALSE
+2026-06-22,TSK-007,Personal,Detection of keywords upload or download,Critical,Pending,,,FALSE
+2026-06-22,TSK-008,Personal,SIEM deployment GT pension,Critical,Pending,,,FALSE
+2026-06-22,TSK-009,Personal,NAC assessment - Nigeria,Critical,Pending,,,FALSE
+2026-06-22,TSK-010,Personal,Q1 - Health check ,Standard,Pending,,,FALSE
+2026-06-22,TSK-011,Personal,New Broker VM creation - Nigeria,High,Pending,,,FALSE
+2026-06-22,TSK-012,Personal,New Broker VM creation - UK,High,Pending,,,FALSE

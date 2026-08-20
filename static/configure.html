@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Settings - Daily BRIEF</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+              "primary": "var(--color-primary)",
+              "on-primary": "var(--color-on-primary)",
+              "background": "var(--color-background)",
+              "on-surface": "var(--color-on-surface)",
+              "secondary": "var(--color-secondary)",
+              "surface": "var(--color-surface)",
+              "surface-container-lowest": "var(--color-surface-container-lowest)",
+              "surface-container-low": "var(--color-surface-container-low)",
+              "surface-container": "var(--color-surface-container)",
+              "surface-container-high": "var(--color-surface-container-high)",
+              "surface-container-highest": "var(--color-surface-container-highest)",
+              "surface-bright": "var(--color-surface-bright)",
+              "outline-variant": "var(--color-outline-variant)",
+              "error": "var(--color-error)"
+            },
+            "borderRadius": {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            "spacing": {
+              "xl": "40px",
+              "margin-mobile": "16px",
+              "base": "4px",
+              "lg": "24px",
+              "md": "16px",
+              "xs": "4px",
+              "sm": "8px",
+              "gutter": "24px",
+              "margin-desktop": "48px"
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        :root {
+          --color-primary: #4F46E5;
+          --color-on-primary: #ffffff;
+          --color-background: #F8FAFC;
+          --color-on-surface: #0F172A;
+          --color-secondary: #64748B;
+          --color-surface-container-lowest: #ffffff;
+          --color-surface-container-low: #F1F5F9;
+          --color-surface-container: #E2E8F0;
+          --color-surface-container-high: #CBD5E1;
+          --color-surface-container-highest: #94A3B8;
+          --color-surface-bright: #ffffff;
+          --color-outline-variant: #E2E8F0;
+          --color-error: #EF4444;
+        }
+        .dark {
+          --color-primary: #818CF8;
+          --color-on-primary: #0F172A;
+          --color-background: #0B0F19;
+          --color-on-surface: #F8FAFC;
+          --color-secondary: #94A3B8;
+          --color-surface-container-lowest: #0F172A;
+          --color-surface-container-low: #1E293B;
+          --color-surface-container: #334155;
+          --color-surface-container-high: #475569;
+          --color-surface-container-highest: #64748B;
+          --color-surface-bright: #0F172A;
+          --color-outline-variant: #1E293B;
+          --color-error: #F87171;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-bright text-on-surface min-h-screen flex">
+    
+    <!-- Sidebar (Desktop & Mobile) -->
+    <nav id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out bg-surface-bright border-r border-outline-variant flex flex-col h-full overflow-y-auto">
+        <div class="h-16 flex items-center px-6 border-b border-outline-variant shrink-0">
+            <span class="material-symbols-outlined text-primary text-[24px] mr-2">calendar_today</span>
+            <h1 class="text-lg font-bold text-primary">Daily BRIEF</h1>
+        </div>
+        
+        <div class="flex-1 py-6 px-4 space-y-1">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-secondary hover:bg-surface-container transition-colors border-l-4 border-transparent" aria-current="page">
+                <span class="material-symbols-outlined">event_note</span>
+                Dashboard
+            </a>
+            
+            <div id="unit-head-link-container" class="hidden">
+                <a href="/unit_head" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-transparent">
+                    <span class="material-symbols-outlined">supervisor_account</span>
+                    Unit Head
+                </a>
+            </div>
+            <div id="admin-link-container" class="hidden">
+                <a href="/admin" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-transparent">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    Admin Panel
+                </a>
+            </div>
+
+                        <a href="/downtime" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-transparent">
+                <span class="material-symbols-outlined">report</span>
+                Downtime Register
+            </a>
+            <a href="/configure" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium border-l-4 border-primary" aria-current="page">
+                <span class="material-symbols-outlined">settings</span>
+                Configuration
+            </a>
+        </div>
+        
+        <div class="p-4 border-t border-outline-variant shrink-0">
+            <button id="logout-btn" class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-secondary hover:text-error hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-on-surface/20 z-40 hidden md:hidden"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-surface-bright border-b border-outline-variant sticky top-0 z-30 flex items-center justify-between px-4 lg:px-8 shrink-0">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-secondary hover:text-primary rounded-lg focus:outline-none" aria-label="Toggle menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h1 class="text-xl font-semibold md:hidden">Daily BRIEF</h1>
+                <h1 class="text-xl font-semibold hidden md:block">Settings</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <span id="user-display-email" class="text-sm text-secondary truncate max-w-[150px] hidden sm:block"></span>
+                <button onclick="toggleDarkMode()" class="text-secondary hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container flex items-center justify-center cursor-pointer" aria-label="Toggle dark mode">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 lg:p-8 overflow-x-hidden">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="flex flex-col gap-xl">
+            <header>
+                <h2 class="text-2xl font-bold text-on-surface mb-2">Master Task Configuration</h2>
+                <p class="text-sm text-secondary">Construct blueprints and stage your operational roster for upcoming deployment cycles.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-xl items-start">
+                
+                <!-- Left Column -->
+                <div class="flex flex-col gap-lg">
+                    <!-- Create Task Blueprint -->
+                    <section class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center gap-sm mb-lg">
+                        <span class="material-symbols-outlined text-primary">edit_note</span>
+                        <h3 class="text-lg font-bold text-on-surface">Create Task Blueprint</h3>
+                    </div>
+                    
+                    <form id="blueprint-form" class="flex flex-col gap-md">
+                        <div class="flex flex-col gap-xs">
+                            <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Task Name</label>
+                            <input id="title-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 font-body-md text-on-surface" placeholder="e.g., Security Audit" type="text" required/>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Recurrence / Category</label>
+                                <select id="category-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer text-sm font-medium">
+                                    <option value="Daily">Daily Routine</option>
+                                    <option value="Monthly">Monthly Maintenance</option>
+                                    <option value="Personal">Personal Task</option>
+                                    <option value="Subsidiary">Subsidiary Task</option>
+                                    <option value="GH task">GH task</option>
+                                    <option value="Colleague Handover">Colleague Handover</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Priority Level</label>
+                                <select id="priority-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer text-sm font-medium">
+                                    <option value="Standard">Standard</option>
+                                    <option value="Low">Low Priority</option>
+                                    <option value="High">High Priority</option>
+                                    <option value="Critical">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="add-btn" class="mt-lg w-full h-12 bg-primary text-on-primary font-semibold rounded-lg flex items-center justify-center gap-sm active:scale-95 transition-transform shadow-lg shadow-primary/10 cursor-pointer">
+                            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                            Add to Roster
+                        </button>
+                    </form>
+                    </section>
+
+                    <!-- Telegram Notifications Configuration -->
+                    <section class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-sm mb-lg">
+                            <span class="material-symbols-outlined text-primary">notifications_active</span>
+                            <h3 class="text-lg font-bold text-on-surface">Telegram Notifications</h3>
+                        </div>
+                        
+                        <form id="telegram-form" class="flex flex-col gap-md">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Enable Notifications</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="telegram-enabled-input" class="sr-only peer"/>
+                                    <div class="w-9 h-5 bg-secondary-container rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-outline after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Bot Token</label>
+                                <input id="telegram-token-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="e.g., 123456789:ABCdefGhI..." type="password"/>
+                            </div>
+
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Chat ID</label>
+                                <input id="telegram-chat-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="e.g., -100123456789 or 6931456377" type="text"/>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-md mt-2">
+                                <button type="button" id="telegram-test-btn" class="h-12 bg-surface-container hover:bg-surface-container-high text-primary font-semibold rounded-lg flex items-center justify-center gap-sm active:scale-95 transition-transform cursor-pointer">
+                                    <span class="material-symbols-outlined text-[20px]">send</span>
+                                    Send Test
+                                </button>
+                                <button type="submit" id="telegram-save-btn" class="h-12 bg-primary text-on-primary font-semibold rounded-lg flex items-center justify-center gap-sm active:scale-95 transition-transform shadow-lg shadow-primary/10 cursor-pointer">
+                                    <span class="material-symbols-outlined text-[20px]">save</span>
+                                    Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- Change Password -->
+                    <section class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-sm mb-lg">
+                            <span class="material-symbols-outlined text-primary">lock</span>
+                            <h3 class="text-lg font-bold text-on-surface">Change Password</h3>
+                        </div>
+                        
+                        <form id="password-form" class="flex flex-col gap-md">
+                            <div id="password-error" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg"></div>
+                            <div id="password-success" class="hidden p-3 bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg"></div>
+                            
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">New Password</label>
+                                <input id="new-password-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="••••••••" type="password" required autocomplete="new-password"/>
+                            </div>
+
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Confirm New Password</label>
+                                <input id="confirm-password-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="••••••••" type="password" required autocomplete="new-password"/>
+                            </div>
+                            
+                            <button type="submit" id="password-save-btn" class="mt-2 h-12 bg-primary text-on-primary font-semibold rounded-lg flex items-center justify-center gap-sm active:scale-95 transition-transform shadow-lg shadow-primary/10 cursor-pointer">
+                                <span class="material-symbols-outlined text-[20px]">vpn_key</span>
+                                Update Password
+                            </button>
+                        </form>
+                    </section>
+
+                    <!-- Create User (Admin Only) -->
+                    <section id="create-user-section" class="hidden bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-sm mb-lg">
+                            <span class="material-symbols-outlined text-primary">person_add</span>
+                            <h3 class="text-lg font-bold text-on-surface">Create New User</h3>
+                        </div>
+                        
+                        <form id="create-user-form" class="flex flex-col gap-md">
+                            <div id="create-user-error" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg"></div>
+                            <div id="create-user-success" class="hidden p-3 bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg"></div>
+                            
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Username</label>
+                                <input id="create-username-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="e.g., john.doe" type="text" required autocomplete="off"/>
+                            </div>
+
+                            <div class="flex flex-col gap-xs">
+                                <label class="text-xs font-semibold text-secondary uppercase tracking-wider">Password</label>
+                                <input id="create-password-input" class="w-full h-12 px-md bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-secondary/40 text-sm text-on-surface" placeholder="••••••••" type="password" required autocomplete="new-password"/>
+                            </div>
+                            
+                            <button type="submit" id="create-user-btn" class="mt-2 h-12 bg-primary text-on-primary font-semibold rounded-lg flex items-center justify-center gap-sm active:scale-95 transition-transform shadow-lg shadow-primary/10 cursor-pointer">
+                                <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                Create User
+                            </button>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- Right Column: Staged Roster & Provision Month -->
+                <section class="flex flex-col gap-lg">
+                    
+                    <!-- Roster List -->
+                    <div class="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant flex flex-col h-[400px]">
+                        <div class="flex justify-between items-center mb-lg">
+                            <div class="flex items-center gap-sm">
+                                <span class="material-symbols-outlined text-primary">list_alt</span>
+                                <h3 class="text-lg font-bold text-on-surface">Staged Roster</h3>
+                            </div>
+                            <span id="roster-count-badge" class="bg-primary-container text-primary font-semibold text-xs px-3 py-1 rounded-full">0 Blueprints</span>
+                        </div>
+                        
+                        <!-- Scrollable Roster Items -->
+                        <div id="roster-container" class="flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-sm">
+                            <!-- Populated dynamically -->
+                            <p class="text-xs text-secondary/60 italic text-center py-12">No staged blueprints configured.</p>
+                        </div>
+                    </div>
+
+                    <!-- Provision Month Action -->
+                    <div class="bg-surface-container p-lg rounded-xl border border-outline-variant border-dashed">
+                        <div class="flex flex-col gap-sm mb-lg">
+                            <h4 class="text-base font-bold text-on-surface">Provision Month</h4>
+                            <p id="lock-month-desc" class="text-xs text-secondary leading-relaxed">
+                                Finalize all blueprints. Once locked, tasks for the remainder of this month cannot be altered without administrative override.
+                            </p>
+                        </div>
+                        <button id="lock-btn" class="w-full h-14 bg-[#1b5e20] text-white font-bold rounded-lg flex items-center justify-center gap-md active:scale-[0.98] transition-transform shadow-md cursor-pointer">
+                            <span class="material-symbols-outlined">lock</span>
+                            <span id="lock-btn-text">Lock Tasks for Month</span>
+                        </button>
+                    </div>
+
+                </section>
+            </div>
+
+
+
+        </div>
+        </main>
+    </div>
+</div>
+
+    <!-- Handover Modal Overlay -->
+    <div id="handover-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80" onclick="closeHandoverModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-outline-variant flex flex-col max-h-[90vh]">
+            <header class="flex items-center justify-between p-6 border-b border-outline-variant">
+                <h3 class="text-xl font-bold text-on-surface" id="handover-modal-title">AI Handover & Subsidiary Generator</h3>
+                <button onclick="closeHandoverModal()" class="text-secondary hover:text-on-surface transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+            
+            <div class="p-6 overflow-y-auto flex-1 space-y-6" id="handover-modal-body">
+                <!-- Step 1: Configuration -->
+                <div id="handover-config-view" class="space-y-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Report Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="reportType" value="handover" checked onchange="toggleReportTypeUI()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Handover Document</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="reportType" value="subsidiary" onchange="toggleReportTypeUI()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Subsidiary Report</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="subsidiary-name-container" class="hidden mb-4">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Subsidiary Name</label>
+                        <input type="text" id="subsidiary-name" placeholder="e.g. Acme Corp" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                    </div>
+
+                    <div id="handover-type-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Handover Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="handoverType" value="false" checked onchange="filterHandoverTasks()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Going on Leave (Handover)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="handoverType" value="true" onchange="filterHandoverTasks()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Returning (Update)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="duration-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Duration / Leave Reason</label>
+                        <input type="text" id="handover-duration" placeholder="e.g. I will be out of office from 29th Sept to 5th Oct" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                        <p class="text-xs text-secondary mt-1">This text will replace the default leave reason in the document.</p>
+                    </div>
+
+                    <div id="handover-location-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Location</label>
+                        <input type="text" id="handover-location" value="Processing Centre" class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-on-surface mb-2 flex justify-between">
+                            <span>Select Tasks</span>
+                            <button onclick="selectAllHandoverTasks()" class="text-primary hover:underline font-normal">Select All</button>
+                        </label>
+                        <div id="handover-task-list" class="space-y-2 border border-outline-variant rounded-lg p-3 max-h-[200px] overflow-y-auto bg-surface-bright">
+                            <!-- Tasks populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Review (JSON Edit) -->
+                <div id="handover-review-view" class="hidden space-y-4">
+                    <p class="text-sm text-secondary">Review and edit the AI-generated handover draft before exporting to DOCX.</p>
+                    <textarea id="handover-json-editor" class="w-full h-[400px] bg-surface-bright border border-outline-variant rounded-lg p-4 font-mono text-xs text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"></textarea>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="handover-loading-view" class="hidden py-12 flex flex-col items-center justify-center text-primary">
+                    <span class="material-symbols-outlined animate-spin text-[48px] mb-4">sync</span>
+                    <p class="font-bold animate-pulse">Gemini 1.5 Pro is analyzing your logs...</p>
+                </div>
+            </div>
+
+            <footer class="p-6 border-t border-outline-variant bg-surface-container-lowest flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeHandoverModal()" class="px-6 py-2 rounded-lg font-bold text-secondary hover:bg-surface-container transition-colors">Cancel</button>
+                <button id="btn-generate-draft" onclick="generateHandoverDraft()" class="px-6 py-2 rounded-lg font-bold bg-primary text-on-primary hover:brightness-110 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">auto_awesome</span> Generate Draft
+                </button>
+                <button id="btn-export-docx" onclick="exportHandoverDocx()" class="hidden px-6 py-2 rounded-lg font-bold bg-[#1d4ed8] text-white hover:brightness-110 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">download</span> Download DOCX
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        let blueprintsList = [];
+        let monthName = "";
+
+        // Run Page initialization
+        async function initPage() {
+            try {
+                // Verify auth
+                const userRes = await fetch('/api/auth/me?_t=' + new Date().getTime(), { cache: 'no-store' });
+                if (!userRes.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+                const userData = await userRes.json();
+                document.getElementById('user-display-email').textContent = userData.user.email;
+                if (userData.user.role === 'admin') {
+                    const adminLink = document.getElementById('admin-link-container');
+                    if(adminLink) adminLink.classList.remove('hidden');
+                }
+
+
+                if (userData.user.email === 'admin') {
+                    document.getElementById('create-user-section').classList.remove('hidden');
+                }
+
+                // Load active month text
+                const today = new Date();
+                monthName = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                document.getElementById('lock-btn-text').textContent = `Lock Tasks for ${today.toLocaleDateString('en-US', { month: 'long' })}`;
+                document.getElementById('lock-month-desc').textContent = `Finalize all blueprints. Once locked, tasks for ${monthName} cannot be altered without administrative override.`;
+                
+                await loadBlueprints();
+                await loadTelegramSettings();
+            } catch (err) {
+                console.error("Initialization failed", err);
+            }
+        }
+
+        // Fetch staged blueprints
+        async function loadBlueprints() {
+            try {
+                const res = await fetch('/api/blueprints?_t=' + new Date().getTime(), { cache: 'no-store' });
+                if (res.ok) {
+                    blueprintsList = await res.json();
+                    renderBlueprints();
+                }
+            } catch (err) {
+                console.error("Load blueprints failed", err);
+            }
+        }
+
+        // Render Blueprints staged roster
+        function renderBlueprints() {
+            const container = document.getElementById('roster-container');
+            const badge = document.getElementById('roster-count-badge');
+            
+            badge.textContent = `${blueprintsList.length} Blueprints`;
+            
+            if (blueprintsList.length === 0) {
+                container.innerHTML = `
+                    <p class="text-xs text-secondary/60 italic text-center py-12">No staged blueprints configured.</p>
+                `;
+                return;
+            }
+
+            container.innerHTML = blueprintsList.map(bp => {
+                // Map category to icon
+                let icon = 'security';
+                if (bp.category === 'Monthly') {
+                    icon = 'layers';
+                } else if (bp.category === 'Personal') {
+                    icon = 'person';
+                } else if (bp.category === 'Subsidiary') {
+                    icon = 'business';
+                } else if (bp.category === 'Colleague Handover') {
+                    icon = 'handshake';
+                } else if (bp.category === 'GH task') {
+                    icon = 'public';
+                }
+                return `
+                    <div class="group flex items-center justify-between p-3 border border-surface-container-high rounded-lg bg-surface-bright hover:border-primary transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">${icon}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface leading-tight">${bp.title}</p>
+                                <p class="text-[11px] text-secondary">${bp.category} • ${bp.priority} Priority</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteBlueprint('${bp.id}')" class="material-symbols-outlined text-secondary hover:text-error transition-colors p-2 rounded-full hover:bg-red-50 cursor-pointer">
+                            delete
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Add blueprint submit
+        document.getElementById('blueprint-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title-input').value;
+            const category = document.getElementById('category-input').value;
+            const priority = document.getElementById('priority-input').value;
+            const addBtn = document.getElementById('add-btn');
+
+            if (!title.trim()) return;
+
+            addBtn.disabled = true;
+            addBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Staging...`;
+
+            try {
+                const response = await fetch('/api/blueprints', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, category, priority })
+                });
+
+                if (response.ok) {
+                    document.getElementById('title-input').value = "";
+                    await loadBlueprints();
+                } else {
+                    alert("Failed to add blueprint.");
+                }
+            } catch (err) {
+                alert("Network error occurred.");
+            } finally {
+                addBtn.disabled = false;
+                addBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">add_circle</span> Add to Roster`;
+            }
+        });
+
+        // Delete blueprint
+        async function deleteBlueprint(id) {
+            if (!confirm("Are you sure you want to delete this blueprint from the master config?")) return;
+
+            try {
+                const response = await fetch(`/api/blueprints/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    await loadBlueprints();
+                } else {
+                    alert("Failed to delete blueprint.");
+                }
+            } catch (err) {
+                alert("Network error occurred.");
+            }
+        }
+
+        // Lock month roster
+        document.getElementById('lock-btn').addEventListener('click', async () => {
+            if (blueprintsList.length === 0) {
+                alert("Cannot lock: stage at least one task blueprint in the roster first.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to lock and deploy the roster for the remainder of ${monthName}?`)) return;
+
+            const lockBtn = document.getElementById('lock-btn');
+            const originalHTML = lockBtn.innerHTML;
+            
+            lockBtn.disabled = true;
+            lockBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Processing...`;
+            lockBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch('/api/roster/lock', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    lockBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Roster Locked Successfully`;
+                    lockBtn.classList.remove('bg-[#1b5e20]');
+                    lockBtn.classList.add('bg-primary');
+                    
+                    setTimeout(() => {
+                        lockBtn.innerHTML = originalHTML;
+                        lockBtn.classList.remove('bg-primary');
+                        lockBtn.classList.add('bg-[#1b5e20]');
+                        lockBtn.disabled = false;
+                        lockBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    }, 2500);
+                } else {
+                    alert(data.detail || "Failed to lock month roster.");
+                    lockBtn.innerHTML = originalHTML;
+                    lockBtn.disabled = false;
+                    lockBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                }
+            } catch (err) {
+                alert("Network error occurred.");
+                lockBtn.innerHTML = originalHTML;
+                lockBtn.disabled = false;
+                lockBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }
+        });
+
+        // Logout action
+        async function performLogout() {
+            try {
+                const response = await fetch('/api/auth/logout', { method: 'POST' });
+                if (response.ok) {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                console.error("Logout failed", err);
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', performLogout);
+        const logoutMobile = document.getElementById('logout-btn-mobile'); if(logoutMobile) { logoutMobile.addEventListener('click', performLogout); }
+
+        // Load Telegram settings
+        async function loadTelegramSettings() {
+            try {
+                const res = await fetch('/api/settings/telegram?_t=' + new Date().getTime(), { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('telegram-enabled-input').checked = data.enabled;
+                    document.getElementById('telegram-token-input').value = data.bot_token || '';
+                    document.getElementById('telegram-chat-input').value = data.chat_id || '';
+                }
+            } catch (err) {
+                console.error("Failed to load Telegram settings", err);
+            }
+        }
+
+        // Change Password Handler
+        document.getElementById('password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password-input').value;
+            const confirmPassword = document.getElementById('confirm-password-input').value;
+            const errorDiv = document.getElementById('password-error');
+            const successDiv = document.getElementById('password-success');
+            const saveBtn = document.getElementById('password-save-btn');
+
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = "Passwords do not match.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Updating...`;
+
+            try {
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_password: newPassword })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    successDiv.textContent = "Password updated successfully.";
+                    successDiv.classList.remove('hidden');
+                    document.getElementById('new-password-input').value = "";
+                    document.getElementById('confirm-password-input').value = "";
+                } else {
+                    errorDiv.textContent = data.detail || "Failed to update password.";
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = "Network error occurred.";
+                errorDiv.classList.remove('hidden');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">vpn_key</span> Update Password`;
+            }
+        });
+
+        // Create User Handler
+        document.getElementById('create-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('create-username-input').value;
+            const password = document.getElementById('create-password-input').value;
+            const errorDiv = document.getElementById('create-user-error');
+            const successDiv = document.getElementById('create-user-success');
+            const createBtn = document.getElementById('create-user-btn');
+
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            createBtn.disabled = true;
+            createBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Creating...`;
+
+            try {
+                const response = await fetch('/api/auth/create-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    successDiv.textContent = `User ${username} created successfully.`;
+                    successDiv.classList.remove('hidden');
+                    document.getElementById('create-username-input').value = "";
+                    document.getElementById('create-password-input').value = "";
+                } else {
+                    errorDiv.textContent = data.detail || "Failed to create user.";
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = "Network error occurred.";
+                errorDiv.classList.remove('hidden');
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">person_add</span> Create User`;
+            }
+        });
+
+        // Save Telegram settings
+        document.getElementById('telegram-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const enabled = document.getElementById('telegram-enabled-input').checked;
+            const bot_token = document.getElementById('telegram-token-input').value;
+            const chat_id = document.getElementById('telegram-chat-input').value;
+            const saveBtn = document.getElementById('telegram-save-btn');
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Saving...`;
+
+            try {
+                const response = await fetch('/api/settings/telegram', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled, bot_token, chat_id })
+                });
+
+                if (response.ok) {
+                    alert("Telegram settings saved successfully.");
+                } else {
+                    const data = await response.json();
+                    alert(data.detail || "Failed to save Telegram settings.");
+                }
+            } catch (err) {
+                alert("Network error occurred.");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">save</span> Save Settings`;
+            }
+        });
+
+        // Test Telegram settings
+        document.getElementById('telegram-test-btn').addEventListener('click', async () => {
+            const enabled = document.getElementById('telegram-enabled-input').checked;
+            const bot_token = document.getElementById('telegram-token-input').value;
+            const chat_id = document.getElementById('telegram-chat-input').value;
+            const testBtn = document.getElementById('telegram-test-btn');
+
+            if (!bot_token || !chat_id) {
+                alert("Please fill in Bot Token and Chat ID before testing.");
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Sending...`;
+
+            try {
+                const response = await fetch('/api/settings/telegram/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled, bot_token, chat_id })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert("Test notification sent successfully. Please check your Telegram!");
+                } else {
+                    alert(data.detail || data.error || "Failed to send test notification. Check token, Chat ID, and make sure you started the bot (/start).");
+                }
+            } catch (err) {
+                alert("Network error occurred.");
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">send</span> Send Test`;
+            }
+        });
+
+        // Run on startup
+        initPage();
+    
+
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => sidebarOverlay.classList.add('opacity-100'), 10);
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.remove('opacity-100');
+            setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        mobileMenuBtn?.addEventListener('click', openSidebar);
+        closeSidebarBtn?.addEventListener('click', closeSidebar);
+        sidebarOverlay?.addEventListener('click', closeSidebar);
+        
+</script>
+    <!-- Export Modal -->
+    <div id="export-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-4 max-h-[90vh]">
+            <div class="flex justify-between items-center border-b border-outline-variant pb-3">
+                <h3 class="text-xl font-bold text-on-surface">Custom Export</h3>
+                <button onclick="closeExportModal()" class="material-symbols-outlined text-secondary hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container">close</button>
+            </div>
+            
+            <div>
+                <div class="flex gap-2 mb-3">
+                    <div class="relative flex-1">
+                        <span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[18px]">search</span>
+                        <input type="text" id="export-search" oninput="renderExportTasks()" placeholder="Search..." class="w-full pl-9 pr-3 py-2 bg-surface-bright border border-outline-variant rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface">
+                    </div>
+                    <select id="export-category-filter" onchange="renderExportTasks()" class="bg-surface-bright border border-outline-variant rounded-lg text-sm px-2 py-2 font-medium text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all cursor-pointer">
+                        <option value="All">All Categories</option>
+                        <option value="Daily">Daily Tasks</option>
+                        <option value="Weekly">Weekly Projects</option>
+                        <option value="GH task">GH task</option>
+                        <option value="Colleague Handover">Colleague Handover</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-sm font-semibold text-on-surface">Select Tasks to Include:</p>
+                    <button onclick="toggleAllExportTasks()" class="text-xs text-primary hover:underline font-medium focus:outline-none">Select All Displayed</button>
+                </div>
+                <div id="export-task-list" class="space-y-2 overflow-y-auto max-h-[40vh] pr-2">
+                    <!-- Checkboxes injected dynamically -->
+                </div>
+            </div>
+            
+            <div class="mt-2">
+                <p class="text-sm font-semibold text-on-surface mb-2">Export Format:</p>
+                <select id="export-format" class="w-full h-10 px-3 bg-surface-bright border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer text-sm font-medium text-on-surface">
+                    <option value="all">Save to Report Hub (All Formats)</option>
+                    <option value="pdf">Download PDF Only</option>
+                    <option value="xlsx">Download Excel Only</option>
+                    <option value="csv">Download CSV Only</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-3 mt-4 pt-4 border-t border-outline-variant">
+                <button onclick="closeExportModal()" class="flex-1 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors">Cancel</button>
+                <button id="submit-export-btn" onclick="submitCustomExport()" class="flex-1 py-2 rounded-lg font-bold bg-primary text-on-primary hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Generate
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

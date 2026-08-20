@@ -1,0 +1,47 @@
+{
+  "builds": [
+    {
+      "src": "app/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": "static/**",
+        "maxDuration": 60
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app/main.py"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "REDACTED",
+    "GEMINI_API_KEY": "REDACTED"
+  },
+  "crons": [
+    {
+      "path": "/api/cron/morning-plan",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/evening-summary",
+      "schedule": "0 16 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
+}

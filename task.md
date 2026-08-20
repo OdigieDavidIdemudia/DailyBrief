@@ -1,0 +1,11 @@
+- `[ ]` Generate sample DOCX to verify format
+- `[ ]` Add `DowntimeReportModel` to `app/db.py`
+- `[ ]` Add AI function `generate_downtime_report_content` to `app/ai.py`
+- `[ ]` Create `app/downtime_report.py` (DOCX builder)
+- `[ ]` Add schemas to `app/schemas.py`
+- `[ ]` Add API endpoints to `app/main.py`
+- `[ ]` Create `static/downtime.html` frontend
+- `[ ]` Update all sidebar nav files
+- `[ ]` Add route to `app/main.py`
+- `[ ]` Run database migration
+- `[ ]` Deploy to Vercel

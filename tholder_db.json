@@ -1,0 +1,343 @@
+{
+  "blueprints": [
+    {
+      "id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "title": "QRadar Alert Triage",
+      "category": "Security Operations",
+      "priority": "High"
+    },
+    {
+      "id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "title": "Python Script for API Reputation Scanner",
+      "category": "Automation",
+      "priority": "Medium"
+    },
+    {
+      "id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "title": "Wazuh Agent Deployment Audit",
+      "category": "Infrastructure",
+      "priority": "Critical"
+    }
+  ],
+  "logs": [
+    {
+      "id": "e3895b2e-e4e5-461e-8521-11be5b6d82b5",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-21",
+      "status": "Completed",
+      "summary": "Reviewed 45 anomalous login attempts; 2 false positives adjusted.",
+      "challenges": "None",
+      "is_critical": false
+    },
+    {
+      "id": "bef2fc22-1205-4fb6-b989-9a94e3442e78",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-21",
+      "status": "In Progress",
+      "summary": "Drafted core logic, pending integration with VT API.",
+      "challenges": "Rate limiting on test endpoint.",
+      "is_critical": false
+    },
+    {
+      "id": "9436b78a-7a34-4f78-82b6-b5d03fba4eec",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-21",
+      "status": "Blocked",
+      "summary": "Agents failing to connect on legacy subnet.",
+      "challenges": "Network Access Control blocking port 1514.",
+      "is_critical": true
+    },
+    {
+      "id": "a65ec541-3411-4d58-85fe-fea0d81c9c01",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-22",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "932151be-7812-4545-8648-d791f15ec980",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-22",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "a04762fc-d031-4465-aa7f-38d958ca1464",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-22",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "72a80e5a-5d14-447a-a9d1-c48c103d3f64",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-23",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "0b878fca-9d3d-4eb2-8e45-bd4cca25ab4a",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-23",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "55ec6300-0c26-489c-b4da-ff59d7d4b128",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-23",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "a2df2287-29b7-4d49-9f03-99021ec8aedb",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-24",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "ab833e6d-b48c-4f23-b2f4-51ede4d28c5a",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-24",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "288996e2-01c4-43a8-8c99-09557fb705be",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-24",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "f6f653b7-94b5-4a44-ae2e-9028d4435c13",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-25",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "723c6c04-70ba-4e09-b05c-2a155e838604",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-25",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "c9e547f2-b4c9-4592-b026-849444b5a724",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-25",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "73c01729-69f5-44b7-900f-cc5810d0aca4",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-26",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "cee31b87-62bb-4c5b-94f8-158af603793a",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-26",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "92bc17ab-34c7-4e83-b82a-a059efaf5bdd",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-26",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "c81c80e0-1578-4300-b690-53f7cad06c94",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-27",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "debe02c9-d639-4445-a2e3-fd20f5023728",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-27",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "b4a07ab6-5df1-421e-a41e-cf99c7955258",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-27",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "19bb6214-5669-44c9-9c16-7355ddf32355",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-28",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "3ee853a1-7d9e-4728-a6cc-2a068f14822e",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-28",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "660da9a1-0866-48a0-b908-92910d274435",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-28",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "75186bd0-8a22-4862-9aec-7d078e96c8e2",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-29",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "98ab9242-27f6-4eae-b13e-cf5365ee953d",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-29",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "ccba05ed-40f4-4ef6-a801-8883cb74fc8c",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-29",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "6be4420a-2256-4f4e-992b-b7def06212d5",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "467adb90-298d-4d39-9124-56e087cf02fa",
+      "date": "2026-06-30",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "f735408c-4a88-4fd3-8e3e-300d7b84678b",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "09425527-51c1-4fe1-abab-df24699ac9ef",
+      "date": "2026-06-30",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    },
+    {
+      "id": "5d066f61-f155-43df-94af-f1f628af7b98",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "blueprint_id": "a776574c-6dfd-4c47-bd0b-88b145c20a1f",
+      "date": "2026-06-30",
+      "status": "Pending",
+      "summary": "",
+      "challenges": "",
+      "is_critical": false
+    }
+  ],
+  "reports": [
+    {
+      "id": "2e30b4de-14f1-4603-a90d-bbeb8ed53911",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "date_generated": "2026-06-21T16:58:44.876Z",
+      "file_url": "/reports/mock-user-test-operator-tholder-local_2026-06-21.pdf",
+      "format": "pdf"
+    },
+    {
+      "id": "5b3eb2bd-2960-4536-be92-677a7534af92",
+      "user_id": "mock-user-test-operator-tholder-local",
+      "date_generated": "2026-06-21T16:58:44.882Z",
+      "file_url": "/reports/mock-user-test-operator-tholder-local_2026-06-21.csv",
+      "format": "csv"
+    }
+  ]
+}

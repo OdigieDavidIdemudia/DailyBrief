@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Downtime Register - Daily BRIEF</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+              "primary": "var(--color-primary)",
+              "on-primary": "var(--color-on-primary)",
+              "background": "var(--color-background)",
+              "on-surface": "var(--color-on-surface)",
+              "secondary": "var(--color-secondary)",
+              "surface": "var(--color-surface)",
+              "surface-container-lowest": "var(--color-surface-container-lowest)",
+              "surface-container-low": "var(--color-surface-container-low)",
+              "surface-container": "var(--color-surface-container)",
+              "surface-container-high": "var(--color-surface-container-high)",
+              "surface-container-highest": "var(--color-surface-container-highest)",
+              "surface-bright": "var(--color-surface-bright)",
+              "outline-variant": "var(--color-outline-variant)",
+              "error": "var(--color-error)"
+            },
+            "borderRadius": {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            "spacing": {
+              "xl": "40px",
+              "margin-mobile": "16px",
+              "base": "4px",
+              "lg": "24px",
+              "md": "16px",
+              "xs": "4px",
+              "sm": "8px",
+              "gutter": "24px",
+              "margin-desktop": "48px"
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        :root {
+          --color-primary: #4F46E5;
+          --color-on-primary: #ffffff;
+          --color-background: #F8FAFC;
+          --color-on-surface: #0F172A;
+          --color-secondary: #64748B;
+          --color-surface-container-lowest: #ffffff;
+          --color-surface-container-low: #F1F5F9;
+          --color-surface-container: #E2E8F0;
+          --color-surface-container-high: #CBD5E1;
+          --color-surface-container-highest: #94A3B8;
+          --color-surface-bright: #ffffff;
+          --color-outline-variant: #E2E8F0;
+          --color-error: #EF4444;
+        }
+        .dark {
+          --color-primary: #818CF8;
+          --color-on-primary: #0F172A;
+          --color-background: #0B0F19;
+          --color-on-surface: #F8FAFC;
+          --color-secondary: #94A3B8;
+          --color-surface-container-lowest: #0F172A;
+          --color-surface-container-low: #1E293B;
+          --color-surface-container: #334155;
+          --color-surface-container-high: #475569;
+          --color-surface-container-highest: #64748B;
+          --color-surface-bright: #0F172A;
+          --color-outline-variant: #1E293B;
+          --color-error: #F87171;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+    </script>
+<style>
+        .chat-bubble { max-width: 80%; border-r border-outline-variantadius: 12px; padding: 12px 16px; margin-bottom: 12px; }
+        .chat-user { background: #3b82f6; color: white; margin-left: auto; border-b border-outline-variantottom-right-radius: 4px; }
+        .chat-magnitude { background: #f3f4f6; color: #1f2937; margin-right: auto; border-b border-outline-variantottom-left-radius: 4px; border: 1px solid #e5e7eb; }
+        .loader { border: 3px solid #f3f3f3; border-t border-outline-variantop: 3px solid #3b82f6; border-r border-outline-variantadius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface min-h-screen flex">
+    
+    <!-- Sidebar (Desktop & Mobile) -->
+    <nav id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out bg-surface-bright border-r border-outline-variant border-outline-variant flex flex-col h-full overflow-y-auto">
+        <div class="h-16 flex items-center px-6 border-b border-outline-variant border-outline-variant shrink-0">
+            <span class="material-symbols-outlined text-primary text-[24px] mr-2">calendar_today</span>
+            <h1 class="text-lg font-bold text-primary">Daily BRIEF</h1>
+        </div>
+        
+        <div class="flex-1 py-6 px-4 space-y-1">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-t border-outline-variantransparent">
+                <span class="material-symbols-outlined">event_note</span>
+                Dashboard
+            </a>
+            
+            <div id="unit-head-link-container" class="hidden">
+                <a href="/unit_head" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-t border-outline-variantransparent">
+                    <span class="material-symbols-outlined">supervisor_account</span>
+                    Unit Head
+                </a>
+            </div>
+            <div id="admin-link-container" class="hidden">
+                <a href="/admin" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-t border-outline-variantransparent">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    Admin Panel
+                </a>
+            </div>
+
+                        <a href="/downtime" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium border-l-4 border-primary" aria-current="page">
+                <span class="material-symbols-outlined">report</span>
+                Downtime Register
+            </a>
+            <a href="/configure" class="flex items-center gap-3 px-3 py-2 rounded-lg text-secondary hover:bg-surface-container transition-colors border-l-4 border-t border-outline-variantransparent">
+                <span class="material-symbols-outlined">settings</span>
+                Configuration
+            </a>
+        </div>
+        
+        <div class="p-4 border-t border-outline-variant border-outline-variant shrink-0">
+            <button id="logout-btn" class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-secondary hover:text-error hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-on-surface/20 z-40 hidden md:hidden"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-surface-bright border-b border-outline-variant border-outline-variant sticky top-0 z-30 flex items-center justify-between px-4 lg:px-8 shrink-0">
+            <div class="flex items-center gap-4">
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-secondary hover:text-primary rounded-lg focus:outline-none" aria-label="Toggle menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h1 class="text-xl font-semibold md:hidden">Downtime Register</h1>
+                <h1 class="text-xl font-semibold hidden md:block">Downtime Register</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <span id="user-display-email" class="text-sm text-secondary truncate max-w-[150px] hidden sm:block"></span>
+                <button onclick="toggleDarkMode()" class="text-secondary hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container flex items-center justify-center cursor-pointer" aria-label="Toggle dark mode">
+                    <span class="material-symbols-outlined">dark_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 lg:p-8 overflow-x-hidden">
+    <header class="mb-lg flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-on-surface">Downtime Register</h1>
+    </header>
+    <div class="flex-1 flex gap-4 h-full" style="height: calc(100vh - 120px)">
+        
+            <!-- Left Side: Magnitude Chat -->
+            <div class="w-full md:w-1/2 flex flex-col border-r border-outline-variant bg-surface h-full">
+                <div class="p-4 border-b border-outline-variant bg-background">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined">smart_toy</span>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-on-surface text-lg leading-tight">Magnitude AI</h2>
+                            <p class="text-xs text-secondary">Downtime Incident Assistant</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Window -->
+                <div id="chat-window" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+                    <div class="chat-bubble chat-magnitude">
+                        Hi, I'm Magnitude. Describe the downtime incident below and I'll draft the formal incident report for you. 
+                        If you miss any important details, I'll ask you to clarify!
+                    </div>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="p-4 border-t border-outline-variant bg-background flex gap-2">
+                    <textarea id="chat-input" class="flex-1 border border-outline-variant rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none" rows="2" placeholder="e.g. QRadar went down at 9am because of disk space..."></textarea>
+                    <button id="send-btn" class="bg-primary hover:bg-primary/90 text-white rounded-lg px-4 flex flex-col items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Draft Preview -->
+            <div class="w-full md:w-1/2 flex flex-col bg-background h-full overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-on-surface">Draft Report Preview</h2>
+                        <button id="export-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 shadow-sm disabled:opacity-50" disabled>
+                            <span class="material-symbols-outlined text-sm">download</span>
+                            Export DOCX
+                        </button>
+                    </div>
+
+                    <div id="draft-container" class="bg-surface rounded-xl shadow-sm border border-outline-variant p-6 space-y-5 hidden">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Downtime ID</label>
+                                <input type="text" id="f-downtime_id" class="w-full border border-outline-variant rounded-md p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">System Affected</label>
+                                <input type="text" id="f-system_affected" class="w-full border border-outline-variant rounded-md p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Start Date</label>
+                                <input type="date" id="f-start_date" class="w-full border border-outline-variant rounded-md p-2 text-sm" placeholder="DD/MM/YYYY">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Start Time</label>
+                                <input type="time" id="f-start_time" class="w-full border border-outline-variant rounded-md p-2 text-sm" placeholder="e.g. 9:00 AM">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">End Date</label>
+                                <input type="date" id="f-end_date" class="w-full border border-outline-variant rounded-md p-2 text-sm" placeholder="DD/MM/YYYY">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">End Time</label>
+                                <input type="time" id="f-end_time" class="w-full border border-outline-variant rounded-md p-2 text-sm" placeholder="e.g. 11:30 AM">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Duration</label>
+                                <input type="text" id="f-duration" class="w-full border border-outline-variant rounded-md p-2 text-sm" placeholder="e.g. 2 Hours 30 Mins">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Severity Level</label>
+                                <select id="f-severity" class="w-full border border-outline-variant rounded-md p-2 text-sm">
+                                    <option value="Critical">Critical</option>
+                                    <option value="High">High</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Impact Summary</label>
+                            <textarea id="f-impact_summary" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="3"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Detection & Notification</label>
+                            <textarea id="f-detection" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="3"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Root Cause Analysis</label>
+                            <textarea id="f-root_cause" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="2"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Mitigation & Recovery</label>
+                            <textarea id="f-mitigation" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="3"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Preventive Measures</label>
+                            <textarea id="f-preventive" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="3"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">Internal Comm.</label>
+                                <textarea id="f-internal" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="2">Notified the Unit Head, Security Monitoring.
+Notified the ISMS Group Head.</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-1">External Comm.</label>
+                                <textarea id="f-external" class="w-full border border-outline-variant rounded-md p-2 text-sm" rows="2">Escalated to Inspira.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="waiting-state" class="flex flex-col items-center justify-center py-20 text-gray-400 text-center">
+                        <span class="material-icons text-5xl mb-2 text-gray-300">description</span>
+                        <p>Chat with Magnitude on the left.<br>Your finalized draft will appear here.</p>
+                    </div>
+
+                </div>
+            </div>
+        
+    </div>
+    </main>
+</div>
+
+    <!-- Handover Modal Overlay -->
+    <div id="handover-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/80" onclick="closeHandoverModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-surface w-full max-w-2xl rounded-2xl shadow-2xl border border-outline-variant border-outline-variant flex flex-col max-h-[90vh]">
+            <header class="flex items-center justify-between p-6 border-b border-outline-variant border-outline-variant">
+                <h3 class="text-xl font-bold text-on-surface" id="handover-modal-title">AI Handover & Subsidiary Generator</h3>
+                <button onclick="closeHandoverModal()" class="text-secondary hover:text-on-surface transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+            
+            <div class="p-6 overflow-y-auto flex-1 space-y-6" id="handover-modal-body">
+                <!-- Step 1: Configuration -->
+                <div id="handover-config-view" class="space-y-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Report Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="reportType" value="handover" checked onchange="toggleReportTypeUI()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Handover Document</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="reportType" value="subsidiary" onchange="toggleReportTypeUI()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Subsidiary Report</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="subsidiary-name-container" class="hidden mb-4">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Subsidiary Name</label>
+                        <input type="text" id="subsidiary-name" placeholder="e.g. Acme Corp" class="w-full bg-surface-bright border border-outline-variant border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                    </div>
+
+                    <div id="handover-type-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Handover Type</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="handoverType" value="false" checked onchange="filterHandoverTasks()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Going on Leave (Handover)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="handoverType" value="true" onchange="filterHandoverTasks()" class="text-primary focus:ring-primary h-4 w-4">
+                                <span class="text-sm">Returning (Update)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="duration-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Duration / Leave Reason</label>
+                        <input type="text" id="handover-duration" placeholder="e.g. I will be out of office from 29th Sept to 5th Oct" class="w-full bg-surface-bright border border-outline-variant border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                        <p class="text-xs text-secondary mt-1">This text will replace the default leave reason in the document.</p>
+                    </div>
+
+                    <div id="handover-location-container">
+                        <label class="block text-sm font-bold text-on-surface mb-2">Location</label>
+                        <input type="text" id="handover-location" value="Processing Centre" class="w-full bg-surface-bright border border-outline-variant border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-on-surface mb-2 flex justify-between">
+                            <span>Select Tasks</span>
+                            <button onclick="selectAllHandoverTasks()" class="text-primary hover:underline font-normal">Select All</button>
+                        </label>
+                        <div id="handover-task-list" class="space-y-2 border border-outline-variant border-outline-variant rounded-lg p-3 max-h-[200px] overflow-y-auto bg-surface-bright">
+                            <!-- Tasks populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Review (JSON Edit) -->
+                <div id="handover-review-view" class="hidden space-y-4">
+                    <p class="text-sm text-secondary">Review and edit the AI-generated handover draft before exporting to DOCX.</p>
+                    <textarea id="handover-json-editor" class="w-full h-[400px] bg-surface-bright border border-outline-variant border-outline-variant rounded-lg p-4 font-mono text-xs text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"></textarea>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="handover-loading-view" class="hidden py-12 flex flex-col items-center justify-center text-primary">
+                    <span class="material-symbols-outlined animate-spin text-[48px] mb-4">sync</span>
+                    <p class="font-bold animate-pulse">Gemini 1.5 Pro is analyzing your logs...</p>
+                </div>
+            </div>
+
+            <footer class="p-6 border-t border-outline-variant border-outline-variant bg-surface-container-lowest flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeHandoverModal()" class="px-6 py-2 rounded-lg font-bold text-secondary hover:bg-surface-container transition-colors">Cancel</button>
+                <button id="btn-generate-draft" onclick="generateHandoverDraft()" class="px-6 py-2 rounded-lg font-bold bg-primary text-on-primary hover:brightness-110 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">auto_awesome</span> Generate Draft
+                </button>
+                <button id="btn-export-docx" onclick="exportHandoverDocx()" class="hidden px-6 py-2 rounded-lg font-bold bg-[#1d4ed8] text-white hover:brightness-110 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">download</span> Download DOCX
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    
+    <!-- Export Modal -->
+    <div id="export-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80">
+        <div class="bg-surface-container-lowest border border-outline-variant border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-4 max-h-[90vh]">
+            <div class="flex justify-between items-center border-b border-outline-variant border-outline-variant pb-3">
+                <h3 class="text-xl font-bold text-on-surface">Custom Export</h3>
+                <button onclick="closeExportModal()" class="material-symbols-outlined text-secondary hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-container">close</button>
+            </div>
+            
+            <div>
+                <div class="flex gap-2 mb-3">
+                    <div class="relative flex-1">
+                        <span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[18px]">search</span>
+                        <input type="text" id="export-search" oninput="renderExportTasks()" placeholder="Search..." class="w-full pl-9 pr-3 py-2 bg-surface-bright border border-outline-variant border-outline-variant rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface">
+                    </div>
+                    <select id="export-category-filter" onchange="renderExportTasks()" class="bg-surface-bright border border-outline-variant border-outline-variant rounded-lg text-sm px-2 py-2 font-medium text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all cursor-pointer">
+                        <option value="All">All Categories</option>
+                        <option value="Daily">Daily Tasks</option>
+                        <option value="Weekly">Weekly Projects</option>
+                        <option value="GH task">GH task</option>
+                        <option value="Colleague Handover">Colleague Handover</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-sm font-semibold text-on-surface">Select Tasks to Include:</p>
+                    <button onclick="toggleAllExportTasks()" class="text-xs text-primary hover:underline font-medium focus:outline-none">Select All Displayed</button>
+                </div>
+                <div id="export-task-list" class="space-y-2 overflow-y-auto max-h-[40vh] pr-2">
+                    <!-- Checkboxes injected dynamically -->
+                </div>
+            </div>
+            
+            <div class="mt-2">
+                <p class="text-sm font-semibold text-on-surface mb-2">Export Format:</p>
+                <select id="export-format" class="w-full h-10 px-3 bg-surface-bright border border-outline-variant border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer text-sm font-medium text-on-surface">
+                    <option value="all">Save to Report Hub (All Formats)</option>
+                    <option value="pdf">Download PDF Only</option>
+                    <option value="xlsx">Download Excel Only</option>
+                    <option value="csv">Download CSV Only</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-3 mt-4 pt-4 border-t border-outline-variant border-outline-variant">
+                <button onclick="closeExportModal()" class="flex-1 py-2 rounded-lg font-semibold text-secondary hover:bg-surface-container transition-colors">Cancel</button>
+                <button id="submit-export-btn" onclick="submitCustomExport()" class="flex-1 py-2 rounded-lg font-bold bg-primary text-on-primary hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Generate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar Toggle Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            
+            function toggleSidebar() {
+                const isClosed = sidebar.classList.contains('-translate-x-full');
+                if (isClosed) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                }
+            }
+            
+            menuBtn.addEventListener('click', toggleSidebar);
+            backdrop.addEventListener('click', toggleSidebar);
+        });
+    </script>
+<script>
+        let chatHistory = [];
+        let initialBrief = "";
+        let username = "";
+        
+        // Setup initial UI
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (!res.ok) throw new Error('Not logged in');
+                const data = await res.json();
+                
+                const emailStr = data.user.email;
+                window.username = emailStr.split('@')[0];
+                const parts = username.split('.');
+                const formattedName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                
+                const userNameEl = document.getElementById('user-name') || document.querySelector('.user-name');
+                const userAvatarEl = document.getElementById('user-avatar') || document.querySelector('.user-avatar');
+                if (userNameEl) userNameEl.textContent = formattedName;
+                if (userAvatarEl) userAvatarEl.textContent = formattedName.charAt(0);
+            } catch (e) {
+                console.error("Auth fetching failed", e);
+            }
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                document.cookie = 'tholder_session_token=; Max-Age=0; path=/';
+                window.location.href = '/login';
+            });
+            
+            // Auto generate Downtime ID
+            const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '');
+            document.getElementById('f-downtime_id').value = `SOC/${dateStr}/001`;
+        });
+
+        // Chat Logic
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const exportBtn = document.getElementById('export-btn');
+
+        function appendMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `chat-bubble ${role === 'user' ? 'chat-user' : 'chat-magnitude'}`;
+            // Convert newlines to br
+            div.innerHTML = text.replace(/\n/g, '<br>');
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function appendLoader() {
+            const div = document.createElement('div');
+            div.id = "chat-loader";
+            div.className = "chat-bubble chat-magnitude flex items-center gap-3";
+            div.innerHTML = `<div class="loader"></div> <span>Thinking...</span>`;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        function removeLoader() {
+            const loader = document.getElementById('chat-loader');
+            if (loader) loader.remove();
+        }
+
+        sendBtn.addEventListener('click', async () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            
+            chatInput.value = '';
+            appendMessage('user', text);
+            
+            if (!initialBrief) {
+                initialBrief = text;
+            } else {
+                chatHistory.push({role: "user", content: text});
+            }
+
+            appendLoader();
+            sendBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/downtime/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        brief: initialBrief,
+                        history: chatHistory
+                    })
+                });
+                
+                removeLoader();
+                sendBtn.disabled = false;
+                
+                if (!res.ok) throw new Error("Failed to reach Magnitude");
+                const data = await res.json();
+                
+                if (data.status === "needs_clarification") {
+                    const qText = "I need a few more details to complete the report:\n\n" + data.questions.map(q => "• " + q).join("\n");
+                    appendMessage("assistant", qText);
+                    chatHistory.push({role: "assistant", content: qText});
+                } else if (data.status === "complete") {
+                    appendMessage("assistant", "Excellent! I have all the details. I've populated the draft on the right. Please review it, make any changes, and click Export when you're ready.");
+                    chatHistory.push({role: "assistant", content: "Draft generated."});
+                    
+                    // Fill form
+                    const draft = data.draft;
+                    if (draft.start_date) document.getElementById('f-start_date').value = draft.start_date;
+                    if (draft.start_time) document.getElementById('f-start_time').value = draft.start_time;
+                    if (draft.end_date) document.getElementById('f-end_date').value = draft.end_date;
+                    if (draft.end_time) document.getElementById('f-end_time').value = draft.end_time;
+                    if (draft.system_affected) document.getElementById('f-system_affected').value = draft.system_affected;
+                    
+                    document.getElementById('f-impact_summary').value = draft.impact_summary || "";
+                    document.getElementById('f-detection').value = draft.detection_and_notification || "";
+                    document.getElementById('f-root_cause').value = draft.root_cause_analysis || "";
+                    document.getElementById('f-mitigation').value = draft.mitigation_and_recovery || "";
+                    document.getElementById('f-preventive').value = draft.preventive_measures || "";
+                    
+                    // Show draft
+                    document.getElementById('waiting-state').classList.add('hidden');
+                    document.getElementById('draft-container').classList.remove('hidden');
+                    exportBtn.disabled = false;
+                }
+
+            } catch (err) {
+                removeLoader();
+                sendBtn.disabled = false;
+                appendMessage("assistant", "Sorry, an error occurred. Please try again.");
+                console.error(err);
+            }
+        });
+
+        // Export Logic
+        exportBtn.addEventListener('click', async () => {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = `<div class="loader" style="width:16px;height:16px;border-width:2px"></div> Generating...`;
+            
+            const payload = {
+                downtime_id: document.getElementById('f-downtime_id').value,
+                start_date: document.getElementById('f-start_date').value,
+                start_time: document.getElementById('f-start_time').value,
+                end_date: document.getElementById('f-end_date').value,
+                end_time: document.getElementById('f-end_time').value,
+                duration: document.getElementById('f-duration').value || "TBD",
+                system_affected: document.getElementById('f-system_affected').value,
+                severity: document.getElementById('f-severity').value,
+                reported_by: window.username || 'Idemudia',
+                position: "Security Monitoring Analyst",
+                
+                impact_summary: document.getElementById('f-impact_summary').value,
+                detection_and_notification: document.getElementById('f-detection').value,
+                root_cause_analysis: document.getElementById('f-root_cause').value,
+                mitigation_and_recovery: document.getElementById('f-mitigation').value,
+                preventive_measures: document.getElementById('f-preventive').value,
+                internal_communication: document.getElementById('f-internal').value,
+                external_communication: document.getElementById('f-external').value,
+                resource: "N/A"
+            };
+            
+            try {
+                const res = await fetch('/api/downtime/export', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!res.ok) throw new Error("Export failed");
+                
+                // Download file
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `downtime_${payload.downtime_id.replace(/\//g, '_')}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+            } catch (e) {
+                alert("Failed to export report.");
+                console.error(e);
+            }
+            
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = `<span class="material-symbols-outlined text-sm">download</span> Export DOCX`;
+        });
+    </script>
+</body>
+</html>

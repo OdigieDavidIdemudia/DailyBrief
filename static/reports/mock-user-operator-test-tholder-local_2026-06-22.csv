@@ -1,0 +1,9 @@
+Date,Task_ID,Category,Task_Title,Priority,Status,Summary,Challenges,Critical_Blocker
+2026-06-22,TSK-001,Security,Endpoint Malware Scan,High,Blocked,Failing to download virus signature updates.,Network firewall port 443 is blocked on the test segment.,TRUE
+2026-06-22,TSK-002,Infrastructure,Update Firewall Rules,Standard,Completed,Adjusted inbound rules to allow local developer access.,None.,FALSE
+2026-06-22,TSK-003,Security,Endpoint Malware Scan,High,Pending,,,FALSE
+2026-06-22,TSK-004,Infrastructure,Update Firewall Rules,Standard,Pending,,,FALSE
+2026-06-22,TSK-005,Security,Endpoint Malware Scan,High,Pending,,,FALSE
+2026-06-22,TSK-006,Infrastructure,Update Firewall Rules,Standard,Pending,,,FALSE
+2026-06-22,TSK-007,Personal,Go for a jog,Low,Pending,,,FALSE
+2026-06-22,TSK-008,Personal,Go for a jog,Low,Pending,,,FALSE

@@ -1,0 +1,13 @@
+fastapi==0.115.8
+pydantic==2.10.6
+uvicorn[standard]==0.34.0
+sqlalchemy==2.0.38
+fpdf2==2.8.2
+python-multipart==0.0.9
+python-dotenv==1.0.1
+supabase==2.13.0
+passlib
+bcrypt
+openpyxl==3.1.5
+psycopg2-binary==2.9.9
+python-docx==1.1.2
