@@ -1,0 +1,8 @@
+# Magnitude AI Guidelines
+# This file contains long-term memories and corrections provided by the user.
+
+- [Hash] 6f088ade49456db2422c3edfbb9998f4a3e9cce7c4c00a7279fb45d672a82b7d
+[Hash] 6888d4c54ef2b5bf23889f9637c2efe77e1d2af4724d315b73d646cf5547dc73
+[Hash] 52c11f246309cce5556a00408bafb9868622114903dbd8128dc4ce3eca2df27a
+
+ioc wasnt included

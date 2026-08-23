@@ -1,21 +1,25 @@
+import os
+
 with open('app/main.py', 'r', encoding='utf-8') as f:
-    text = f.read()
+    content = f.read()
 
-idx = text.find('app = FastAPI')
-idx = text.find('\n', idx) + 1
+old_code = """    if "error" in result:
+        return {"status": "complete", "draft": {"impact_summary": "DEBUG ERROR: " + str(result["error"]), "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}}
+        
+    return result"""
 
-middleware_code = """
-@app.middleware("http")
-async def add_cache_headers(request: Request, call_next):
-    response = await call_next(request)
-    if request.url.path.startswith("/api"):
-        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-    return response
-"""
+new_code = """    if "error" in result:
+        return {"status": "complete", "draft": {"impact_summary": "DEBUG ERROR: " + str(result["error"]), "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}}
+        
+    result["status"] = "complete"
+    if "draft" not in result or not result["draft"]:
+        result["draft"] = {"impact_summary": "", "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}
+    return result"""
 
-new_text = text[:idx] + middleware_code + text[idx:]
-
-with open('app/main.py', 'w', encoding='utf-8') as f:
-    f.write(new_text)
+if old_code in content:
+    content = content.replace(old_code, new_code)
+    with open('app/main.py', 'w', encoding='utf-8') as f:
+        f.write(content)
+    print("Success")
+else:
+    print("Failed to find old code")

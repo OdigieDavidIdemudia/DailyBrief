@@ -39,7 +39,9 @@ class UserSession:
 # Authenticate user from Request cookie
 async def get_current_user(request: Request) -> UserSession:
     token = request.cookies.get("tholder_session_token")
+    print(f"DEBUG AUTH: Path={request.url.path}, Token={token}")
     if not token:
+        print("DEBUG AUTH: No token found in cookies.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated"

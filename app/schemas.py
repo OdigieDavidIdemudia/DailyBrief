@@ -155,6 +155,7 @@ class MagnitudeResponse(BaseModel):
     draft: Optional[dict] = None
 
 class ExportDowntimeRequest(BaseModel):
+    format: str = "docx"
     downtime_id: str
     start_date: str
     start_time: str
@@ -185,3 +186,6 @@ class DowntimeReportResponse(BaseModel):
 
     class Config:
         from_attributes = True
+class RefineDowntimeDraftRequest(BaseModel):
+    draft: dict
+    corrections: str

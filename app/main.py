@@ -1,4 +1,4 @@
-from app.downtime_report import build_downtime_docx
+from app.downtime_report import build_downtime_docx, build_downtime_pdf
 import uuid
 import os
 import shutil
@@ -14,7 +14,7 @@ load_dotenv()
 
 from app.db import init_db, get_db, BlueprintModel, DailyLogModel, ReportArchiveModel, UserSettingsModel, UserModel, DowntimeReportModel
 from app.auth import get_current_user, sign_in_user, UserSession, is_supabase_enabled
-from app.schemas import MagnitudeResponse, GenerateDowntimeDraftRequest, ExportDowntimeRequest, DowntimeReportResponse, LoginRequest, BlueprintCreate, BlueprintResponse, DailyLogUpdate, DailyLogResponse, ReportResponse, GenerateReportRequest, TelegramSettingsUpdate, TelegramSettingsResponse, GenerateHandoverDraftRequest, ExportHandoverRequest, GenerateSubsidiaryReportRequest, ExportSubsidiaryReportRequest, ChangePasswordRequest, CreateUserRequest
+from app.schemas import MagnitudeResponse, GenerateDowntimeDraftRequest, ExportDowntimeRequest, DowntimeReportResponse, LoginRequest, BlueprintCreate, BlueprintResponse, DailyLogUpdate, DailyLogResponse, ReportResponse, GenerateReportRequest, TelegramSettingsUpdate, TelegramSettingsResponse, GenerateHandoverDraftRequest, ExportHandoverRequest, GenerateSubsidiaryReportRequest, ExportSubsidiaryReportRequest, ChangePasswordRequest, CreateUserRequest, RefineDowntimeDraftRequest
 from app.reports import generate_csv_report, generate_pdf_report, generate_xlsx_report
 from app.notifications import notify_user_event, send_telegram_message
 from app.ai import generate_handover_content, generate_subsidiary_report_content, generate_downtime_draft
@@ -24,9 +24,21 @@ from app.subsidiary_report import populate_subsidiary_docx
 # Initialize database schemas
 init_db()
 
+from app.health_check_api import router as health_check_router
+from app.memory_api import router as memory_router
+from app.tia_api import router as tia_router
+from app.assessment_api import router as assessment_router
+from app.knowledge_sharing_api import router as ks_router
+
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Tholder API", description="Automated Daily Task Tracker Backend")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+app.include_router(health_check_router)
+app.include_router(memory_router)
+app.include_router(tia_router)
+app.include_router(assessment_router)
+app.include_router(ks_router)
 
 @app.middleware("http")
 async def add_cache_headers(request: Request, call_next):
@@ -124,6 +136,17 @@ async def get_configure(request: Request):
     if not os.path.exists(configure_path):
         raise HTTPException(status_code=404, detail="configure.html template missing")
     return FileResponse(configure_path)
+
+@app.get("/health-check", response_class=HTMLResponse)
+async def get_health_check(request: Request):
+    token = request.cookies.get("tholder_session_token")
+    if not token:
+        return RedirectResponse(url="/login")
+        
+    hc_path = os.path.join(STATIC_DIR, "health_check.html")
+    if not os.path.exists(hc_path):
+        raise HTTPException(status_code=404, detail="health_check.html template missing")
+    return FileResponse(hc_path)
 
 # API: Auth Routes
 @app.post("/api/auth/change_password")
@@ -1112,7 +1135,18 @@ async def api_downtime_chat(req: GenerateDowntimeDraftRequest, current_user: Use
     if "error" in result:
         return {"status": "complete", "draft": {"impact_summary": "DEBUG ERROR: " + str(result["error"]), "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}}
         
+    result["status"] = "complete"
+    if "draft" not in result or not result["draft"]:
+        result["draft"] = {"impact_summary": "", "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}
     return result
+
+@app.post("/api/downtime/refine")
+async def api_downtime_refine(req: RefineDowntimeDraftRequest, current_user: UserSession = Depends(get_current_user)):
+    from app.ai import refine_downtime_draft
+    res = await refine_downtime_draft(req.draft, req.corrections)
+    if "error" in res:
+        raise HTTPException(status_code=500, detail=res["error"])
+    return res
 
 @app.post("/api/downtime/export")
 async def api_downtime_export(req: ExportDowntimeRequest, current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -1174,3 +1208,54 @@ async def serve_static_root_files(filename: str):
     if filename.endswith(".html"):
         return RedirectResponse(url="/")
     raise HTTPException(status_code=404, detail="File not found")
+
+from typing import List
+from pydantic import BaseModel
+from app.ai import magnitude
+
+class AIKeysRequest(BaseModel):
+    keys: List[str]
+
+@app.get("/api/settings/ai-keys")
+async def api_get_ai_keys(current_user: UserSession = Depends(get_current_user)):
+    # magnitude.api_keys is now a list of dicts: [{"key": "...", "model": "..."}, ...]
+    string_keys = [k["key"] if isinstance(k, dict) else k for k in magnitude.api_keys]
+    return {"keys": string_keys}
+
+@app.post("/api/settings/ai-keys")
+async def api_update_ai_keys(
+    req: AIKeysRequest, 
+    current_user: UserSession = Depends(get_current_user)
+):
+    valid_keys = [k.strip() for k in req.keys if k.strip()]
+    if not valid_keys:
+        return {"success": False, "detail": "At least one valid API key is required"}
+        
+    import httpx
+    keys_with_models = []
+    
+    for key in valid_keys:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url)
+                if resp.status_code != 200:
+                    return {"success": False, "detail": f"API key starting with '{key[:15]}...' is invalid or inactive (Status {resp.status_code})."}
+                
+                data = resp.json()
+                models = [m.get("name", "") for m in data.get("models", [])]
+                
+                # Auto-discover best flash model
+                best_model = "gemini-1.5-flash" # fallback
+                if "models/gemini-3.6-flash" in models:
+                    best_model = "gemini-3.6-flash"
+                elif "models/gemini-2.5-flash" in models:
+                    best_model = "gemini-2.5-flash"
+                
+                keys_with_models.append({"key": key, "model": best_model})
+                
+        except Exception as e:
+            return {"success": False, "detail": f"Network error while validating key starting with '{key[:15]}...': {str(e)}"}
+
+    magnitude.set_keys(keys_with_models)
+    return {"success": True, "message": "All API keys validated, models auto-discovered, and saved successfully!"}

@@ -1,4 +1,3 @@
-
 import os
 import json
 import httpx
@@ -6,9 +5,31 @@ from typing import List, Dict, Optional
 
 class MagnitudeAI:
     def __init__(self):
-        keys_str = os.environ.get("GEMINI_API_KEYS", os.environ.get("GEMINI_API_KEY", ""))
-        self.api_keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+        self.keys_file = os.path.join(os.path.dirname(__file__), "memory", "ai_keys.json")
+        self.api_keys = []
         self.current_key_idx = 0
+        self.load_keys()
+        
+    def load_keys(self):
+        if os.path.exists(self.keys_file):
+            try:
+                with open(self.keys_file, "r") as f:
+                    data = json.load(f)
+                if data:
+                    self.api_keys = [{"key": k, "model": "gemini-3.6-flash"} if isinstance(k, str) else k for k in data]
+                    return
+            except Exception:
+                pass
+        
+        keys_str = os.environ.get("GEMINI_API_KEYS", os.environ.get("GEMINI_API_KEY", ""))
+        self.api_keys = [{"key": k.strip(), "model": "gemini-3.6-flash"} for k in keys_str.split(",") if k.strip()]
+
+    def set_keys(self, keys: List[str]):
+        self.api_keys = keys
+        self.current_key_idx = 0
+        os.makedirs(os.path.dirname(self.keys_file), exist_ok=True)
+        with open(self.keys_file, "w") as f:
+            json.dump(self.api_keys, f)
 
     def get_key(self):
         if not self.api_keys:
@@ -23,20 +44,29 @@ class MagnitudeAI:
         if not self.api_keys:
             return {"error": "GEMINI_API_KEYS not configured"}
 
-        max_retries = max(1, len(self.api_keys))
+        import asyncio
+        max_retries = max(3, len(self.api_keys) * 2)
         last_error = None
 
-        for _ in range(max_retries):
-            key = self.get_key()
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={key}"
+        for attempt in range(max_retries):
+            key_info = self.get_key()
+            key_val = key_info["key"] if isinstance(key_info, dict) else key_info
+            model_val = key_info["model"] if isinstance(key_info, dict) else "gemini-3.6-flash"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_val}:generateContent?key={key_val}"
             
             try:
                 async with httpx.AsyncClient(timeout=90.0) as client:
                     response = await client.post(url, json=payload)
                     
                     if response.status_code == 429:
-                        print(f"Key {self.current_key_idx} exhausted. Rotating...")
+                        print(f"Key {self.current_key_idx} exhausted (429). Rotating...")
                         self.rotate_key()
+                        await asyncio.sleep(1)
+                        continue
+                        
+                    if response.status_code in [500, 502, 503, 504]:
+                        print(f"Google API transient error {response.status_code}. Retrying...")
+                        await asyncio.sleep(2)
                         continue
                         
                     response.raise_for_status()
@@ -51,13 +81,27 @@ class MagnitudeAI:
                     else:
                         return {"error": "Invalid response format from Gemini API."}
             except Exception as e:
-                if isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 429:
-                    self.rotate_key()
+                if isinstance(e, httpx.HTTPStatusError):
+                    if e.response.status_code == 429:
+                        self.rotate_key()
+                        await asyncio.sleep(1)
+                        continue
+                    if e.response.status_code in [500, 502, 503, 504]:
+                        last_error = str(e)
+                        await asyncio.sleep(2)
+                        continue
+                        
+                # Handle network disconnects (ReadError, ConnectError)
+                if isinstance(e, httpx.RequestError):
+                    print(f"Network error ({type(e).__name__}). Retrying...")
+                    last_error = str(e)
+                    await asyncio.sleep(2)
                     continue
+
                 last_error = str(e)
                 return {"error": f"Failed to generate AI content: {last_error}"}
 
-        return {"error": "All API keys exhausted or failed. Last error: " + str(last_error)}
+        return {"error": "All API keys exhausted or retries failed. Last error: " + str(last_error)}
 
 magnitude = MagnitudeAI()
 
@@ -309,12 +353,7 @@ downtime_schema = {
     "properties": {
         "status": {
             "type": "string",
-            "description": "Must be either 'needs_clarification' or 'complete'"
-        },
-        "questions": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "Array of 1-3 clarifying questions if status is 'needs_clarification'"
+            "description": "Always return 'complete'"
         },
         "draft": {
             "type": "object",
@@ -324,60 +363,93 @@ downtime_schema = {
                 "root_cause_analysis": {"type": "string"},
                 "mitigation_and_recovery": {"type": "string"},
                 "preventive_measures": {"type": "string"},
+                "internal_communication": {"type": "string"},
+                "external_communication": {"type": "string"},
+                "resource": {"type": "string"},
                 "start_date": {"type": "string", "description": "Extracted start date e.g. 19/08/2026"},
-                "start_time": {"type": "string", "description": "Extracted start time e.g. 9:00 AM"},
+                "start_time": {"type": "string", "description": "Extracted start time e.g. 14:00"},
                 "end_date": {"type": "string"},
                 "end_time": {"type": "string"},
-                "system_affected": {"type": "string"}
+                "system_affected": {"type": "string"},
+                "duration": {"type": "string", "description": "e.g. 2 hours"}
             },
-            "required": ["impact_summary", "detection_and_notification", "root_cause_analysis", "mitigation_and_recovery", "preventive_measures"]
+            "required": ["impact_summary", "detection_and_notification", "root_cause_analysis", "mitigation_and_recovery", "preventive_measures", "internal_communication", "external_communication", "resource", "system_affected"]
         }
     },
-    "required": ["status"]
+    "required": ["status", "draft"]
 }
 
+import os
+
+def _get_memory_guidelines():
+    memory_path = os.path.join(os.path.dirname(__file__), 'memory', 'magnitude_guidelines.txt')
+    if os.path.exists(memory_path):
+        with open(memory_path, 'r') as f:
+            return f.read().strip()
+    return ""
+
 async def generate_downtime_draft(brief: str, history: List[Dict[str, str]]) -> dict:
-    conversation = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history])
-    
-    prompt = f"""
-      You are Magnitude, an advanced, highly intelligent AI agent created by the Google DeepMind team, specifically trained to assist David Idemudia Odigie as his elite Cybersecurity SOC counterpart. You possess deep expertise in SOC operations, incident response, network architecture, and security engineering. 
+      conversation = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history])
       
-      Your current objective is to synthesize raw, informal notes into a pristine, C-suite ready 'Downtime Incident Report'.
+      memory = _get_memory_guidelines()
+      memory_directive = f"\nUSER GUIDELINES (LONG-TERM MEMORY):\nAlways adhere to these permanent rules:\n{memory}\n" if memory else ""
       
-      CORE DIRECTIVES:
-      1. Technical Synthesis: Do not just regurgitate what the user says. Connect the dots logically. You are trained to handle over 1,000+ unique SOC scenarios spanning SIEM (QRadar, Splunk), NAC (Cisco ISE, Forescout), Firewalls (Fortinet, CheckPoint, Palo Alto), WAF (F5, Imperva), EDR/XDR (Cortex, CrowdStrike, SentinelOne), and Cloud architecture.
-      2. Autonomy & Inference: If the user provides partial technical details (e.g., QRadar Ariel DB filled up), you must autonomously infer the broader impact (e.g., dropped event pipelines, loss of visibility) and the standard mitigation steps (e.g., expanding LVM, clearing old logs) without needing to be spoon-fed.
-      3. Professionalism: Use highly precise, authoritative SOC terminology. Structure the narrative so it reads like it was written by a Senior Security Engineer.
+      prompt = f"""
+        You are Magnitude, an elite Cybersecurity SOC assistant.
+        
+        Your objective is to synthesize raw, informal notes into a pristine, concise, and factual 'Downtime Incident Report'.
+        
+        CORE DIRECTIVES:
+        1. Humanization & Tone: You are an executive communicator. Translate all technical incidents into clear, straightforward, and human-readable language. Avoid overly dense technical jargon. Ensure the report reads like it was written by a human manager for an executive audience.
+        2. Be Extremely Concise: Keep explanations short, factual, and strictly to the point. Eliminate all fluff, filler text, and verbosity.
+        3. No Hallucinations: Do NOT invent specific filenames, daemons, or fictional technical parameters. Do NOT invent a numbered list for preventive measures unless the user explicitly gave you the points.
+        4. Precise Technical Synthesis: Use authoritative SOC terminology but do not add unnecessary technical details that were not implied by the brief.
+        5. Auto-Fill Communication: If the user mentions escalating to a vendor or team, place that in the `internal_communication` or `external_communication` fields. If they mention resources, use the `resource` field.
+        {memory_directive}
+        
+        You need to generate the narrative fields: Impact Summary, Detection and Notification, Root Cause Analysis, Mitigation and Recovery Actions, Preventive Measures, Internal Communication, External Communication, and Resource.
+        
+        Review the current conversation history below:
+        {conversation}
+        """
       
-      You need to generate 5 specific narrative fields:
-      1. Impact Summary: A high-level, executive explanation of what went down, the duration, and the business/security impact.
-      2. Detection and Notification: How the issue was first observed (e.g., proactive monitoring, alerts, user reports).
-      3. Root Cause Analysis: A deep-dive technical explanation of the failure mechanism.
-      4. Mitigation and Recovery Actions: The precise, step-by-step actions taken to restore service.
-      5. Preventive Measures: Strategic recommendations to prevent recurrence.
-      
-      Additionally, extract standard fields like start/end date, start/end time, and system affected if provided.
-      
-      RULES FOR INTERACTION:
-      - If the user's brief is fundamentally missing critical context that you CANNOT reasonably infer (e.g., they didn't mention the root cause AT ALL, or the affected system is completely ambiguous), set `status` to "needs_clarification" and ask 1 to 2 highly specific, technically accurate questions to get the missing pieces. 
-      - When asking questions, be conversational, sharp, and helpful. Sound like an intelligent colleague (e.g., "I see Forcepoint went down, but was it a policy sync failure or a hardware crash?"), not a generic robot.
-      - If you have enough information (or can reasonably infer the technical blanks based on your massive SOC expertise), set `status` to "complete" and populate the `draft` object. Expand on their brief significantly to make it a comprehensive incident report.
-      - Do not be generic. Be highly specific to the context provided.
-      
-      User's Initial Brief:
-      {brief}
-      
-      Conversation History (if any):
-      {conversation}
-      """
-    
-    payload = {
+      payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0.3,
+            "temperature": 0.2,
             "responseMimeType": "application/json",
             "responseSchema": downtime_schema
         }
-    }
-    
-    return await magnitude._call_gemini(payload)
+      }
+      return await magnitude._call_gemini(payload)
+
+async def refine_downtime_draft(draft: dict, corrections: str) -> dict:
+      memory = _get_memory_guidelines()
+      memory_directive = f"\nUSER GUIDELINES (LONG-TERM MEMORY):\nAlways adhere to these permanent rules:\n{memory}\n" if memory else ""
+      
+      prompt = f"""
+        You are Magnitude, an elite Cybersecurity SOC assistant.
+        The user has provided feedback/corrections for a Downtime Incident Report Draft.
+        
+        You must output a newly rewritten JSON draft that perfectly applies their feedback.
+        
+        CORE DIRECTIVES:
+        1. Humanization & Tone: You are an executive communicator. Use clear, straightforward, and human-readable language. Avoid overly dense technical jargon.
+        {memory_directive}
+        
+        --- USER CORRECTIONS ---
+        {corrections}
+        
+        --- CURRENT DRAFT JSON ---
+        {draft}
+        """
+      
+      payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "responseMimeType": "application/json",
+            "responseSchema": downtime_schema
+        }
+      }
+      return await magnitude._call_gemini(payload)

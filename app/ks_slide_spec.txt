@@ -1,0 +1,46 @@
+﻿SLIDE GENERATION SPEC v2.0 — PROFESSIONAL INFORMATIONAL SLIDES
+
+PHILOSOPHY:
+- Choose a layout because it EXPLAINS the information, not because it looks attractive
+- Prioritize: meaning → structure → comprehension → hierarchy → readability → visual polish
+- Never default to bullet lists when a relationship exists spatially
+
+DESIGN SYSTEM:
+- Background: #11141C (dark, cybersecurity default)
+- Surface primary: #1B2130 | Surface secondary: #232A38 | Elevated: #293142
+- Text primary: #F5F6F8 | Text secondary: #B4BBC8 | Muted: #7F899C
+- Accent colors MAX 2: pick semantically — risk=#E8998C, control=#7FD8CC, critical=#F0B45C, info=#8FA8FF
+- Font: Arial. Hierarchy: title=30pt bold, subtitle=14pt, section=19pt bold, body=12.5pt, small label=9.5pt bold UPPER
+- NEVER shrink below 11pt. If it does not fit, redesign the layout.
+
+CONTENT ENGINE (always do all 4 steps):
+1. EXTRACT: Identify subject, key message, supporting facts, relationships, examples, consequences
+2. PRIORITIZE: Determine the SINGLE most important takeaway
+3. CLASSIFY: definition | comparison | process | timeline | architecture | threat_chain | risk_control | metrics | case_study | before_after | list | summary
+4. VISUALIZE: If a relationship can be shown spatially, prefer diagram/flow/matrix over bullets
+
+LAYOUT SELECTION RULES:
+- definition → large_definition_with_supporting_context
+- comparison → side_by_side_comparison or before_after
+- process → horizontal_flow or numbered_sequence (with connectors)
+- threat_chain → attack_path (left-to-right chain)
+- architecture → layered_model or system_map
+- risk_control → risk_to_control_mapping (risks left, controls right)
+- metrics → metric_dashboard (large numbers + context)
+- case_study → problem_response_outcome (3-part)
+- list → structured_list ONLY if no relationship exists between items. Cards only when items are independent and equal-weight.
+- timeline → horizontal_timeline with milestones
+
+BANNED decorative elements:
+- Accent stripes under title
+- Random decorative lines
+- Generic checkmarks, stars, lightbulbs, shields
+- Rounded cards when content is a process/hierarchy/flow
+- Fake data visualizations
+- AI corporate fluff bullets
+
+WRITING RULES:
+- Bullets: max 4 per group, preferred 3. Every bullet introduces NEW information.
+- Titles: 3-10 words, state the subject clearly
+- No generic motivational titles. No marketing language.
+- No repeating the heading in the body.

@@ -78,3 +78,49 @@ def build_downtime_docx(data: dict) -> str:
     
     doc.save(out_path)
     return out_path
+
+from fpdf import FPDF
+class DowntimePDF(FPDF):
+    def header(self):
+        self.set_font('Helvetica', 'B', 16)
+        self.cell(0, 10, 'DOWNTIME INCIDENT REPORT', border=1, ln=True, align='C')
+        self.ln(5)
+
+def build_downtime_pdf(data: dict) -> str:
+    pdf = DowntimePDF()
+    pdf.add_page()
+    pdf.set_font('Helvetica', '', 10)
+    
+    # Metadata
+    pdf.cell(45, 8, f"Start Date: {data.get('start_date', '')}", border=1)
+    pdf.cell(45, 8, f"Start Time: {data.get('start_time', '')}", border=1)
+    pdf.cell(55, 8, f"Downtime ID: {data.get('downtime_id', '')}", border=1)
+    pdf.cell(45, 8, f"Duration: {data.get('duration', '')}", border=1, ln=True)
+    
+    pdf.cell(90, 8, f"Reported By: {data.get('reported_by', '')}", border=1)
+    pdf.cell(100, 8, f"Position: {data.get('position', '')}", border=1, ln=True)
+    
+    pdf.cell(190, 8, f"System Affected: {data.get('system_affected', '')}", border=1, ln=True)
+    pdf.cell(190, 8, f"Severity: {data.get('severity', '')}", border=1, ln=True)
+    pdf.ln(5)
+    
+    sections = [
+        ('Impact Summary', data.get('impact_summary', '')),
+        ('Detection & Notification', data.get('detection_and_notification', '')),
+        ('Root Cause Analysis', data.get('root_cause_analysis', '')),
+        ('Mitigation & Recovery', data.get('mitigation_and_recovery', '')),
+        ('Preventive Measures', data.get('preventive_measures', ''))
+    ]
+    
+    for title, content in sections:
+        pdf.set_font('Helvetica', 'B', 12)
+        pdf.cell(0, 8, title, border=0, ln=True)
+        pdf.set_font('Helvetica', '', 10)
+        # Using built-in character encoding handling for FPDF 1.x
+        content = str(content).encode('latin-1', 'replace').decode('latin-1')
+        pdf.multi_cell(0, 6, content, border=1)
+        pdf.ln(5)
+        
+    out_path = os.path.join(tempfile.gettempdir(), f"downtime_{data.get('downtime_id', 'draft').replace('/', '_')}.pdf")
+    pdf.output(out_path)
+    return out_path

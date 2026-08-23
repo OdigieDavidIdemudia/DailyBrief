@@ -1,7 +1,5 @@
-import os
-
-dashboard_jsx = """import React, { useState, useEffect } from 'react';
-import { Save, Search, Download, Check, FileText, X, Bot } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Search, Download, Check, FileText, X, Bot, AlertTriangle, MessageSquare, Mail } from 'lucide-react';
 
 const Dashboard = () => {
   const [blueprints, setBlueprints] = useState([]);
@@ -27,8 +25,8 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       const [bpRes, logsRes] = await Promise.all([
-        fetch('http://127.0.0.1:8000/api/blueprints'),
-        fetch('http://127.0.0.1:8000/api/logs')
+        fetch('http://localhost:8000/api/blueprints', { credentials: 'include' }),
+        fetch('http://localhost:8000/api/logs', { credentials: 'include' })
       ]);
       if(bpRes.ok) setBlueprints(await bpRes.json());
       if(logsRes.ok) setLogs(await logsRes.json());
@@ -41,7 +39,7 @@ const Dashboard = () => {
 
   const handleUpdateLog = async (id, field, value) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/logs/${id}`, {
+      const res = await fetch(`http://localhost:8000/api/logs/${id}`, { credentials: 'include', 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
@@ -69,7 +67,7 @@ const Dashboard = () => {
       };
 
       const endpoint = reportType === 'handover' ? '/api/generate-handover-draft' : '/api/generate-subsidiary-draft';
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      const res = await fetch(`http://localhost:8000${endpoint}`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -86,7 +84,7 @@ const Dashboard = () => {
   const exportDocx = async () => {
     try {
       const endpoint = reportType === 'handover' ? '/api/export-handover' : '/api/export-subsidiary-report';
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      const res = await fetch(`http://localhost:8000${endpoint}`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: draft
@@ -106,8 +104,8 @@ const Dashboard = () => {
 
   const filteredLogs = logs.filter(log => {
     const bp = blueprints.find(b => b.id === log.blueprint_id);
-    const matchesSearch = (bp?.system_name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'All' || bp?.time_of_day === categoryFilter;
+    const matchesSearch = (bp?.title || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === 'All' || bp?.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -135,7 +133,7 @@ const Dashboard = () => {
           <Search className="absolute left-3 top-3 text-black w-5 h-5" />
           <input 
             type="text" 
-            placeholder="Search tasks by system name..." 
+            placeholder="Search tasks by name..." 
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="neo-input pl-10 text-lg"
@@ -147,20 +145,24 @@ const Dashboard = () => {
           className="neo-input w-full md:w-64 font-bold text-lg cursor-pointer"
         >
           <option value="All">All Categories</option>
-          <option value="Morning">Morning Tasks</option>
-          <option value="Afternoon">Afternoon Tasks</option>
-          <option value="Evening">Evening Tasks</option>
+          <option value="Daily">Daily Routine</option>
+          <option value="Monthly">Monthly</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredLogs.map((log) => {
           const bp = blueprints.find(b => b.id === log.blueprint_id);
+          const priorityColor = bp?.priority === 'Critical' ? 'bg-red-500 text-white' : bp?.priority === 'High' ? 'bg-orange-400' : 'bg-white';
+
           return (
             <div key={log.id} className="neo-card flex flex-col hover:-translate-y-1 transition-transform group">
-              <div className="bg-neo-blue p-4 border-b-neo border-neo-border flex justify-between items-center group-hover:bg-neo-primary group-hover:text-white transition-colors">
-                <span className="font-bold text-lg truncate pr-2" title={bp?.system_name || 'Unknown'}>{bp?.system_name || 'Unknown System'}</span>
-                <span className="text-xs font-black bg-white text-black px-2 py-1 border-neo border-neo-border shadow-neo-sm whitespace-nowrap">{bp?.time_of_day}</span>
+              <div className="bg-neo-blue p-4 border-b-neo border-neo-border flex justify-between items-start group-hover:bg-neo-primary group-hover:text-white transition-colors gap-2">
+                <span className="font-bold text-lg leading-tight">{bp?.title || 'Unknown Task'}</span>
+                <div className="flex flex-col gap-1 items-end shrink-0">
+                  <span className="text-xs font-black bg-white text-black px-2 py-1 border-neo border-neo-border shadow-neo-sm whitespace-nowrap">{bp?.category}</span>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 border-neo border-neo-border shadow-neo-sm whitespace-nowrap ${priorityColor}`}>{bp?.priority}</span>
+                </div>
               </div>
               <div className="p-4 space-y-4 bg-white flex-1 flex flex-col">
                 <div>
@@ -168,34 +170,58 @@ const Dashboard = () => {
                   <select 
                     value={log.status} 
                     onChange={e => handleUpdateLog(log.id, 'status', e.target.value)}
-                    className={`neo-input font-bold cursor-pointer ${log.status === 'issue' || log.status === 'downtime' ? 'bg-neo-accent text-white border-neo-border' : ''}`}
+                    className={`neo-input font-bold cursor-pointer ${log.status === 'Blocked' || log.status === 'Flagged' ? 'bg-neo-accent text-white border-neo-border' : log.status === 'Completed' ? 'bg-neo-green' : ''}`}
                   >
-                    <option value="pending">Pending</option>
-                    <option value="normal">Normal</option>
-                    <option value="issue">Issue</option>
-                    <option value="downtime">Downtime</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Flagged">Flagged</option>
+                    <option value="Blocked">Blocked</option>
                   </select>
                 </div>
                 
-                <div className="flex-1 flex flex-col">
-                  <label className="text-xs font-bold uppercase block mb-1">Observation</label>
-                  <textarea 
-                    className="neo-input flex-1 min-h-[120px] resize-none" 
-                    defaultValue={log.observation || ''}
-                    onBlur={e => handleUpdateLog(log.id, 'observation', e.target.value)}
-                    placeholder="Enter observations..."
-                  />
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <label className="text-xs font-bold uppercase block mb-1 text-gray-700 flex items-center gap-1"><FileText className="w-3 h-3"/> Summary</label>
+                    <textarea 
+                      className="neo-input w-full min-h-[80px] resize-y text-sm" 
+                      defaultValue={log.summary || ''}
+                      onBlur={e => handleUpdateLog(log.id, 'summary', e.target.value)}
+                      placeholder="What did you do?"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs font-bold uppercase block mb-1 text-gray-700 flex items-center gap-1"><AlertTriangle className="w-3 h-3"/> Challenges</label>
+                    <textarea 
+                      className="neo-input w-full min-h-[60px] resize-y text-sm" 
+                      defaultValue={log.challenges || ''}
+                      onBlur={e => handleUpdateLog(log.id, 'challenges', e.target.value)}
+                      placeholder="Any roadblocks?"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold uppercase block mb-1 text-gray-700 flex items-center gap-1"><Mail className="w-3 h-3"/> Mail Trail</label>
+                    <input 
+                      type="text"
+                      className="neo-input w-full text-sm" 
+                      defaultValue={log.mail_trail || ''}
+                      onBlur={e => handleUpdateLog(log.id, 'mail_trail', e.target.value)}
+                      placeholder="e.g. Email to IT Helpdesk..."
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t-2 border-dashed border-gray-300">
+                <div className="flex items-center gap-3 pt-4 border-t-2 border-dashed border-gray-300 mt-auto">
                   <input 
                     type="checkbox" 
-                    id={`esc-${log.id}`}
-                    checked={log.issue_escalated} 
-                    onChange={e => handleUpdateLog(log.id, 'issue_escalated', e.target.checked)}
+                    id={`crit-${log.id}`}
+                    checked={log.is_critical} 
+                    onChange={e => handleUpdateLog(log.id, 'is_critical', e.target.checked)}
                     className="w-6 h-6 border-neo border-neo-border rounded-sm cursor-pointer accent-neo-accent"
                   />
-                  <label htmlFor={`esc-${log.id}`} className="font-black text-sm text-neo-accent cursor-pointer uppercase">Issue Escalated</label>
+                  <label htmlFor={`crit-${log.id}`} className="font-black text-sm text-neo-accent cursor-pointer uppercase">Mark as Critical</label>
                 </div>
               </div>
             </div>
@@ -285,7 +311,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-"""
-
-with open('frontend/src/pages/Dashboard.jsx', 'w', encoding='utf-8') as f:
-    f.write(dashboard_jsx)

@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-neo-bg text-neo-text font-sans;
+  }
+}
+
+@layer components {
+  .neo-btn {
+    @apply px-4 py-2 bg-neo-primary text-white border-neo border-neo-border rounded-neo shadow-neo font-bold transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:-translate-y-0.5 hover:shadow-neo-lg;
+  }
+  .neo-btn-secondary {
+    @apply px-4 py-2 bg-neo-surface text-neo-text border-neo border-neo-border rounded-neo shadow-neo font-bold transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:-translate-y-0.5 hover:shadow-neo-lg;
+  }
+  .neo-btn-accent {
+    @apply px-4 py-2 bg-neo-accent text-white border-neo border-neo-border rounded-neo shadow-neo font-bold transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none hover:-translate-y-0.5 hover:shadow-neo-lg;
+  }
+  .neo-card {
+    @apply bg-neo-surface border-neo border-neo-border rounded-neo-lg shadow-neo-lg overflow-hidden;
+  }
+  .neo-input {
+    @apply w-full px-3 py-2 bg-white border-neo border-neo-border rounded-neo shadow-neo-sm focus:outline-none focus:ring-2 focus:ring-neo-primary focus:shadow-neo transition-shadow;
+  }
+}
