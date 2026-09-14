@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Plus, Trash2, Save, Send, Lock, CheckCircle, AlertCircle, Edit3, Key } from 'lucide-react';
 
 const Configure = () => {
@@ -42,7 +42,7 @@ const Configure = () => {
 
   const fetchSeprep = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/settings/seprep', { credentials: 'include' });
+      const res = await fetch('/api/settings/seprep', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setSeprepConfig(data);
@@ -53,7 +53,7 @@ const Configure = () => {
 
   const fetchAiKeys = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/settings/ai-keys', { credentials: 'include' });
+      const res = await fetch('/api/settings/ai-keys', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (data.keys && data.keys.length > 0) setAiKeys(data.keys);
@@ -64,7 +64,7 @@ const Configure = () => {
   const handleSaveAiKeys = async () => {
     setSavingAi(true);
     try {
-      const res = await fetch('http://localhost:8000/api/settings/ai-keys', {
+      const res = await fetch('/api/settings/ai-keys', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -92,19 +92,19 @@ const Configure = () => {
   };
 
   const fetchBlueprints = async () => {
-    const res = await fetch('http://localhost:8000/api/blueprints', { credentials: 'include' });
+    const res = await fetch('/api/blueprints', { credentials: 'include' });
     if(res.ok) setBlueprints(await res.json());
   };
 
   const fetchTelegram = async () => {
-    const res = await fetch('http://localhost:8000/api/settings/telegram', { credentials: 'include' });
+    const res = await fetch('/api/settings/telegram', { credentials: 'include' });
     if(res.ok) setTelegramConfig(await res.json());
   };
 
   const handleAddBlueprint = async (e) => {
     e.preventDefault();
     if (!newTitle) return;
-    const res = await fetch('http://localhost:8000/api/blueprints', { credentials: 'include', 
+    const res = await fetch('/api/blueprints', { credentials: 'include', 
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ title: newTitle, category: newCategory, priority: newPriority })
@@ -116,12 +116,12 @@ const Configure = () => {
   };
 
   const handleDeleteBlueprint = async (id) => {
-    await fetch(`http://localhost:8000/api/blueprints/${id}`, { credentials: 'include',  method: 'DELETE' });
+    await fetch(`/api/blueprints/${id}`, { credentials: 'include',  method: 'DELETE' });
     fetchBlueprints();
   };
 
   const handleSaveTelegram = async () => {
-    await fetch('http://localhost:8000/api/settings/telegram', { credentials: 'include', 
+    await fetch('/api/settings/telegram', { credentials: 'include', 
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(telegramConfig)
@@ -132,7 +132,7 @@ const Configure = () => {
         const handleSaveSeprep = async () => {
       setSavingSeprep(true);
       try {
-        await fetch('http://localhost:8000/api/settings/seprep', {
+        await fetch('/api/settings/seprep', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           credentials: 'include',
@@ -148,7 +148,7 @@ const Configure = () => {
     };
 
   const handleTestTelegram = async () => {
-    const res = await fetch('http://localhost:8000/api/settings/telegram/test', { credentials: 'include', 
+    const res = await fetch('/api/settings/telegram/test', { credentials: 'include', 
       method: 'POST'
     });
     const msg = await res.json();
@@ -160,7 +160,7 @@ const Configure = () => {
     
     setLocking(true);
     try {
-      const res = await fetch('http://localhost:8000/api/roster/lock', { credentials: 'include',  method: 'POST' });
+      const res = await fetch('/api/roster/lock', { credentials: 'include',  method: 'POST' });
       const data = await res.json();
       if (res.ok) {
         setLockSuccess(true);
@@ -262,7 +262,7 @@ const Configure = () => {
                       <div key={bp.id} className="flex justify-between items-center bg-white border-neo border-neo-border p-3 rounded-neo shadow-neo-sm">
                         <div className="flex flex-col">
                           <span className="font-bold">{bp.title}</span>
-                          <span className="text-xs font-bold text-gray-500 uppercase">{bp.category} Ã¯Â¿Â½ {bp.priority}</span>
+                          <span className="text-xs font-bold text-gray-500 uppercase">{bp.category} ï¿½ {bp.priority}</span>
                         </div>
                         <button onClick={() => handleDeleteBlueprint(bp.id)} className="text-neo-accent hover:text-red-700 bg-red-100 p-2 rounded-neo border-neo border-neo-border">
                           <Trash2 className="w-5 h-5"/>
@@ -417,7 +417,7 @@ const Configure = () => {
                           <Key className="w-5 h-5 text-gray-500" />
                           <div>
                             <p className="text-xs font-black uppercase text-gray-500">VirusTotal API Key</p>
-                            <p className="font-mono font-bold tracking-widest text-lg">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</p>
+                            <p className="font-mono font-bold tracking-widest text-lg">••••••••••••••••••••••••••••</p>
                           </div>
                         </div>
                       </div>
@@ -427,7 +427,7 @@ const Configure = () => {
                           <Key className="w-5 h-5 text-gray-500" />
                           <div>
                             <p className="text-xs font-black uppercase text-gray-500">AbuseIPDB API Key</p>
-                            <p className="font-mono font-bold tracking-widest text-lg">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</p>
+                            <p className="font-mono font-bold tracking-widest text-lg">••••••••••••••••••••••••••••</p>
                           </div>
                         </div>
                       </div>
@@ -489,6 +489,7 @@ const Configure = () => {
 };
 
 export default Configure;
+
 
 
 

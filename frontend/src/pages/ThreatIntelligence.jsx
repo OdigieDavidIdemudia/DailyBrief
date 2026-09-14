@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bot, FileText, Upload, Send, ShieldCheck, Download, Edit3, Trash2, Plus, Radar, CheckCircle, AlertCircle } from 'lucide-react';
 import MagnitudePreviewBuilder from '../components/MagnitudePreviewBuilder';
 
@@ -83,7 +83,7 @@ const ThreatIntelligence = () => {
     };
 
     const fetchPromise = (async () => {
-      const res = await fetch('http://localhost:8000/api/tia/generate', {
+      const res = await fetch('/api/tia/generate', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -114,7 +114,7 @@ const ThreatIntelligence = () => {
     
     setRefining(true);
     try {
-      const res = await fetch('http://localhost:8000/api/tia/refine', {
+      const res = await fetch('/api/tia/refine', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -127,7 +127,7 @@ const ThreatIntelligence = () => {
       setDraft(data.draft);
       
       if (saveToMemory) {
-        await fetch('http://localhost:8000/api/memory/add', {
+        await fetch('/api/memory/add', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -149,7 +149,7 @@ const ThreatIntelligence = () => {
     if (!draft) return;
     setExporting(true);
     try {
-      const res = await fetch('http://localhost:8000/api/tia/export', {
+      const res = await fetch('/api/tia/export', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -392,3 +392,4 @@ const ThreatIntelligence = () => {
 };
 
 export default ThreatIntelligence;
+

@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Bot, BookOpen, Download, FileText, Presentation, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 
-const API = "http://localhost:8000";
+const API = "";
 
 
 const KnowledgeSharing = () => {
@@ -127,7 +127,7 @@ const KnowledgeSharing = () => {
               <textarea
                 value={details}
                 onChange={e => setDetails(e.target.value)}
-                placeholder="Paste your raw notes, bullet points, article summaries â€” anything you want to teach. Magnitude will structure it into slides."
+                placeholder="Paste your raw notes, bullet points, article summaries — anything you want to teach. Magnitude will structure it into slides."
                 className="neo-input w-full min-h-[200px]"
               />
             </div>
@@ -248,14 +248,14 @@ const KnowledgeSharing = () => {
                             <ul className="space-y-1">
                               {slide.bullets?.map((b, bi) => (
                                 <li key={bi} className="text-gray-300 text-xs flex items-start gap-2">
-                                  <span className="text-neo-yellow shrink-0">â–¸</span>{b}
+                                  <span className="text-neo-yellow shrink-0">▸</span>{b}
                                 </li>
                               ))}
                             </ul>
                           </div>
                           {/* Presenter notes A4-style */}
                           <div className="bg-amber-50 border-t-2 border-dashed border-amber-200 mx-4 mb-3 p-3 mt-2 rounded-neo">
-                            <p className="text-xs font-black uppercase text-amber-700 mb-1">ðŸ“¢ Presenter Notes</p>
+                            <p className="text-xs font-black uppercase text-amber-700 mb-1">📢 Presenter Notes</p>
                             <p className="text-xs text-gray-700 leading-relaxed">{slide.presenter_script}</p>
                           </div>
                         </div>
@@ -294,4 +294,5 @@ const KnowledgeSharing = () => {
 };
 
 export default KnowledgeSharing;
+
 

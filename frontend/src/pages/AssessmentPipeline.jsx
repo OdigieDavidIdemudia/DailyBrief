@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bot, Save, FileText, Send, CheckCircle, Table, Check, Edit3, X, AlertCircle, ShieldCheck, Download } from 'lucide-react';
 
 
@@ -14,7 +14,7 @@ const StandaloneTab = ({ showToast }) => {
     if (!assessmentName || !scope || !rawNotes) { showToast("Please fill all fields.", "error"); return; }
     setGenerating(true);
     try {
-      const res = await fetch('http://localhost:8000/api/assessment/standalone/generate', {
+      const res = await fetch('/api/assessment/standalone/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assessment_name: assessmentName, scope, raw_notes: rawNotes })
@@ -34,7 +34,7 @@ const StandaloneTab = ({ showToast }) => {
     if (!draft) return;
     setExporting(true);
     try {
-      const res = await fetch('http://localhost:8000/api/assessment/standalone/export', {
+      const res = await fetch('/api/assessment/standalone/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ draft })
@@ -158,7 +158,7 @@ const AssessmentPipeline = () => {
   const [activeTool, setActiveTool] = useState('NAC');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/assessment/state')
+    fetch('/api/assessment/state')
       .then(r => r.json())
       .then(data => setState(data))
       .catch(e => console.error("Failed to load state", e));
@@ -167,7 +167,7 @@ const AssessmentPipeline = () => {
   const saveState = async (newState) => {
     setState(newState);
     try {
-      await fetch('http://localhost:8000/api/assessment/state', {
+      await fetch('/api/assessment/state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newState)
@@ -272,7 +272,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
   const fetchDashboard = async () => {
     if (!state.subsidiary.subsidiary_name) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/assessment/dashboard?subsidiary_name=${encodeURIComponent(state.subsidiary.subsidiary_name)}`);
+      const res = await fetch(`/api/assessment/dashboard?subsidiary_name=${encodeURIComponent(state.subsidiary.subsidiary_name)}`);
       const data = await res.json();
       setDashboardData(data);
     } catch(e) { console.error(e); }
@@ -289,7 +289,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
     setExportingExSum(true);
     showToast("AI is generating the Executive Summary. This may take 30 seconds...", "success");
     try {
-      const res1 = await fetch('http://localhost:8000/api/assessment/executive-summary/generate', {
+      const res1 = await fetch('/api/assessment/executive-summary/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state })
@@ -297,7 +297,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
       if (!res1.ok) throw new Error("Failed to generate draft");
       const draft = await res1.json();
       
-      const res2 = await fetch('http://localhost:8000/api/assessment/executive-summary/export', {
+      const res2 = await fetch('/api/assessment/executive-summary/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ draft })
@@ -325,7 +325,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
     const toolsToExport = Object.values(state.tools).filter(t => t.status === 'ready_to_generate' || t.status === 'logged_to_master' || t.status === 'closed');
     
     try {
-      const res = await fetch('http://localhost:8000/api/assessment/export/excel', {
+      const res = await fetch('/api/assessment/export/excel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -337,7 +337,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
       if (!res.ok) throw new Error(data.detail);
       
       const a = document.createElement('a');
-      a.href = `http://localhost:8000${data.download_url}`;
+      a.href = `${data.download_url}`;
       a.download = data.download_url.split('/').pop();
       a.click();
       
@@ -421,7 +421,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
       
       setGenerating(true);
       try {
-        const res = await fetch('http://localhost:8000/api/assessment/generate', {
+        const res = await fetch('/api/assessment/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -441,7 +441,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
       
       setGenerating(true);
       try {
-        const res = await fetch('http://localhost:8000/api/assessment/generate/bulk', {
+        const res = await fetch('/api/assessment/generate/bulk', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -463,7 +463,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
     if (!subsidiary.subsidiary_name) { showToast("Configure subsidiary name in Dashboard first.", "error"); return; }
     setExportingDocx(true);
     try {
-      const res = await fetch('http://localhost:8000/api/assessment/export/docx', {
+      const res = await fetch('/api/assessment/export/docx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -475,7 +475,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
       if (!res.ok) throw new Error(data.detail);
       
       const a = document.createElement('a');
-      a.href = `http://localhost:8000${data.download_url}`;
+      a.href = `${data.download_url}`;
       a.download = data.download_url.split('/').pop();
       a.click();
     } catch(e) { console.error(e); showToast("Failed to export DOCX.", "error"); }
@@ -669,4 +669,5 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
 };
 
 export default AssessmentPipeline;
+
 

@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity, AlertTriangle, CheckCircle, Shield, Bot, FileText, Clock, Archive } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const API = "http://localhost:8000";
+const API = "";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -136,3 +136,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

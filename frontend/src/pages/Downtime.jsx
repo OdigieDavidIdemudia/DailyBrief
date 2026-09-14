@@ -19,7 +19,7 @@ const Downtime = () => {
     
     setRefining(true);
     try {
-      const res = await fetch('http://localhost:8000/api/downtime/refine', {
+      const res = await fetch('/api/downtime/refine', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -32,7 +32,7 @@ const Downtime = () => {
       setDraft(data.draft);
       
       if (saveToMemory) {
-        await fetch('http://localhost:8000/api/memory/add', {
+        await fetch('/api/memory/add', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -58,7 +58,7 @@ const Downtime = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/downtime/chat', { credentials: 'include', 
+      const res = await fetch('/api/downtime/chat', { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ brief: newMsg.content, history: chatHistory })
@@ -114,7 +114,7 @@ const Downtime = () => {
       };
 
     try {
-      const res = await fetch('http://localhost:8000/api/downtime/export', { credentials: 'include', 
+      const res = await fetch('/api/downtime/export', { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -333,3 +333,4 @@ const Downtime = () => {
 };
 
 export default Downtime;
+

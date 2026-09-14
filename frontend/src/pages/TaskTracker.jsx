@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Search, Download, Check, FileText, X, Bot, AlertTriangle, MessageSquare, Mail } from 'lucide-react';
 
 const TaskTracker = () => {
@@ -26,8 +26,8 @@ const TaskTracker = () => {
   const fetchData = async () => {
     try {
       const [bpRes, logsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/blueprints', { credentials: 'include' }),
-        fetch('http://localhost:8000/api/logs', { credentials: 'include' })
+        fetch('/api/blueprints', { credentials: 'include' }),
+        fetch('/api/logs', { credentials: 'include' })
       ]);
       if(bpRes.ok) setBlueprints(await bpRes.json());
       if(logsRes.ok) setLogs(await logsRes.json());
@@ -40,7 +40,7 @@ const TaskTracker = () => {
 
   const handleUpdateLog = async (id, field, value) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/logs/${id}`, { credentials: 'include', 
+      const res = await fetch(`/api/logs/${id}`, { credentials: 'include', 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
@@ -68,7 +68,7 @@ const TaskTracker = () => {
       };
 
       const endpoint = reportType === 'handover' ? '/api/generate-handover-draft' : '/api/generate-subsidiary-draft';
-      const res = await fetch(`http://localhost:8000${endpoint}`, { credentials: 'include', 
+      const res = await fetch(`${endpoint}`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -85,7 +85,7 @@ const TaskTracker = () => {
   const exportDocx = async () => {
     try {
       const endpoint = reportType === 'handover' ? '/api/export-handover' : '/api/export-subsidiary-report';
-      const res = await fetch(`http://localhost:8000${endpoint}`, { credentials: 'include', 
+      const res = await fetch(`${endpoint}`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: draft
@@ -256,4 +256,5 @@ const TaskTracker = () => {
 };
 
 export default TaskTracker;
+
 

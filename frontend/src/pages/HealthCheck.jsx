@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bot, FileText, Upload, Send, File, ShieldCheck, Download, Edit3, Trash2, Plus } from 'lucide-react';
 
 const HealthCheck = () => {
@@ -28,7 +28,7 @@ const HealthCheck = () => {
     setRefining(true);
     try {
       // 1. Send refinement request
-      const res = await fetch('http://localhost:8000/api/health-check/refine', {
+      const res = await fetch('/api/health-check/refine', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +42,7 @@ const HealthCheck = () => {
       
       // 2. Save to memory if checked
       if (saveToMemory) {
-        await fetch('http://localhost:8000/api/memory/add', {
+        await fetch('/api/memory/add', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -75,7 +75,7 @@ const HealthCheck = () => {
     formData.append('reviewed_by', reviewedBy);
 
     try {
-      const res = await fetch('http://localhost:8000/api/health-check/analyze', {
+      const res = await fetch('/api/health-check/analyze', {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -105,7 +105,7 @@ const HealthCheck = () => {
     
     setExporting(true);
     try {
-      const res = await fetch('http://localhost:8000/api/health-check/export', {
+      const res = await fetch('/api/health-check/export', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -463,4 +463,5 @@ const HealthCheck = () => {
 };
 
 export default HealthCheck;
+
 

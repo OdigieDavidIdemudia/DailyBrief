@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Archive, Download, Trash2, Search, Clock, File } from 'lucide-react';
 
-const API = "http://localhost:8000";
+const API = "";
 
 const Repository = () => {
   const [documents, setDocuments] = useState([]);
@@ -104,3 +104,4 @@ const Repository = () => {
   );
 };
 export default Repository;
+
