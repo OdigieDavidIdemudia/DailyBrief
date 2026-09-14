@@ -60,7 +60,44 @@ def get_wat_date_string() -> str:
     return wat_now.strftime("%Y-%m-%d")
 
 # Page Routes (serving HTML templates directly)
+# API: Auth Routes
+@app.post("/api/auth/change_password")
+async def api_change_password(req: ChangePasswordRequest, current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+    
+    user.password_hash = pwd_context.hash(req.new_password)
+    user.force_password_change = False
+    db.commit()
+    return {"success": True, "message": "Password changed successfully"}
 
+@app.post("/api/auth/login")
+async def api_login(credentials: LoginRequest, response: Response):
+    res = await sign_in_user(credentials.email, credentials.password)
+    if not res.get("success"):
+        raise HTTPException(status_code=400, detail=res.get("error", "Sign in failed"))
+    
+    # Set session cookie
+    if "session_token" in res:
+        response.set_cookie(
+            key="tholder_session_token",
+            value=res["session_token"],
+            httponly=True,
+            max_age=60 * 60 * 24 * 7, # 1 week
+            path="/",
+            samesite="lax",
+            secure=False  # Set True for production https
+        )
+    return res
+
+@app.post("/api/auth/logout")
+async def api_logout(response: Response):
+    response.delete_cookie(key="tholder_session_token", path="/")
+    return {"success": True, "message": "Signed out successfully"}
 
 @app.get("/api/auth/me")
 async def api_me(current_user: UserSession = Depends(get_current_user)):
@@ -989,6 +1026,77 @@ app.include_router(unit_head_router)
 # DOWNTIME REGISTER ENDPOINTS (Magnitude AI)
 # ==============================================================================
 
+@app.post("/api/downtime/chat", response_model=MagnitudeResponse)
+async def api_downtime_chat(req: GenerateDowntimeDraftRequest, current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
+    # 1. We just pass the brief and history to Magnitude
+    # Convert Pydantic MagnitudeMessage to dict
+    history = [{"role": msg.role, "content": msg.content} for msg in req.history]
+    
+    result = await generate_downtime_draft(req.brief, history)
+    
+    if "error" in result:
+        return {"status": "complete", "draft": {"impact_summary": "DEBUG ERROR: " + str(result["error"]), "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}}
+        
+    result["status"] = "complete"
+    if "draft" not in result or not result["draft"]:
+        result["draft"] = {"impact_summary": "", "detection_and_notification": "", "root_cause_analysis": "", "mitigation_and_recovery": "", "preventive_measures": ""}
+    return result
+
+@app.post("/api/downtime/refine")
+async def api_downtime_refine(req: RefineDowntimeDraftRequest, current_user: UserSession = Depends(get_current_user)):
+    from app.ai import refine_downtime_draft
+    res = await refine_downtime_draft(req.draft, req.corrections)
+    if "error" in res:
+        raise HTTPException(status_code=500, detail=res["error"])
+    return res
+
+@app.post("/api/downtime/export")
+async def api_downtime_export(req: ExportDowntimeRequest, current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        user = current_user
+        
+        report = db.query(DowntimeReportModel).filter(DowntimeReportModel.downtime_id == req.downtime_id).first()
+        if not report:
+            report = DowntimeReportModel(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                downtime_id=req.downtime_id
+            )
+            db.add(report)
+        
+        report.start_date = req.start_date
+        report.start_time = req.start_time
+        report.end_date = req.end_date
+        report.end_time = req.end_time
+        report.duration = req.duration
+        report.system_affected = req.system_affected
+        report.severity = req.severity
+        report.reported_by = req.reported_by
+        report.position = req.position
+        
+        report.impact_summary = req.impact_summary
+        report.detection_and_notification = req.detection_and_notification
+        report.root_cause_analysis = req.root_cause_analysis
+        report.mitigation_and_recovery = req.mitigation_and_recovery
+        report.preventive_measures = req.preventive_measures
+        report.internal_communication = req.internal_communication
+        report.external_communication = req.external_communication
+        report.resource = req.resource
+        
+        db.commit()
+        
+        out_path = build_downtime_docx(req.dict())
+        
+        return FileResponse(out_path, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=os.path.basename(out_path))
+    except Exception as e:
+        print("EXPORT ERROR:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/api/downtime/reports", response_model=List[DowntimeReportResponse])
+async def api_downtime_reports(current_user: UserSession = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = current_user
+        
+    reports = db.query(DowntimeReportModel).filter(DowntimeReportModel.user_id == user.id).order_by(DowntimeReportModel.created_at.desc()).all()
+    return reports
 
 
 from typing import List
@@ -1041,25 +1149,18 @@ async def api_update_ai_keys(
 
     magnitude.set_keys(keys_with_models)
     return {"success": True, "message": "All API keys validated, models auto-discovered, and saved successfully!"}
-
-
 # UI Routes - Handled by React SPA
 @app.get("/{full_path:path}")
 async def serve_spa(request: Request, full_path: str):
-    # Ignore API routes and static assets
     if full_path.startswith("api/") or full_path.startswith("reports/"):
         raise HTTPException(status_code=404, detail="Not found")
     
-    # Try to serve as a static file if it exists (e.g. favicon.ico)
     file_path = os.path.join(STATIC_DIR, full_path)
     if os.path.isfile(file_path):
         return FileResponse(file_path)
         
-    # Otherwise, return the React SPA index.html
     index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
         
     raise HTTPException(status_code=404, detail="Frontend not built")
-
-
