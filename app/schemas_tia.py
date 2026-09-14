@@ -50,6 +50,27 @@ class ReferenceOutput(BaseModel):
     url: str
     date: Optional[str] = None
 
+
+class AttackChainStep(BaseModel):
+    step_title: str
+    step_description: str
+
+class MitreAttckMapping(BaseModel):
+    technique_id: str
+    technique_name: str
+    context: str
+
+class ManualCheck(BaseModel):
+    label: str
+    code: str
+    note: Optional[str] = None
+
+class ActionPlan(BaseModel):
+    label: str
+    code: Optional[str] = None
+    note: Optional[str] = None
+    action_items: Optional[List[str]] = None
+
 class TIAStructuredOutput(BaseModel):
     report_id: str
     title: str
@@ -57,21 +78,22 @@ class TIAStructuredOutput(BaseModel):
     prepared_by: str
     reviewed_by: str
     org_unit: str
-    threat_categories: List[str]
-    cve: List[str]
-    how: str
-    malware_score: Optional[int] = None
-    severity_assessed: str
     executive_summary: str
-    threat_landscape: str
-    detection_rules: List[DetectionRuleOutput]
+    critical_impact: str
+    threat_mechanism: str
+    attack_chain: List[AttackChainStep]
+    tactics_and_red_flags: List[str]
+    affected_distributions: List[str]
+    mitre_attck: List[MitreAttckMapping]
     iocs: List[IOCOutput]
-    impact_assessment: str
-    affected_assets: List[str]
-    recommendations: List[RecommendationOutput]
+    manual_checks: List[ManualCheck]
+    assessment_statement: str
+    assessment_priority: str
+    immediate_mitigations: List[ActionPlan]
+    priority_actions: List[ActionPlan]
+    alternative_controls: List[ActionPlan]
+    environmental_considerations: str
     references: List[ReferenceOutput]
-    appendices: List[str]
-
 class TIAGenerateRequest(BaseModel):
     threat: ThreatInput
     raw_iocs: Optional[str] = None

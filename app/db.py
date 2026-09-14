@@ -131,6 +131,18 @@ class TeamModel(Base):
     name = Column(String(255), nullable=False)
     unit_head_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
+# Repository Document Model
+class RepositoryDocumentModel(Base):
+    __tablename__ = "repository_documents"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    module = Column(String(100), nullable=False)        # e.g. "TIA", "Assessment", "Handover"
+    title = Column(String(500), nullable=False)
+    file_path = Column(String(1000), nullable=False)    # local relative path or URL
+    format = Column(String(20), nullable=False, default="docx")  # docx, pdf, xlsx
+    saved_by = Column(String(255), nullable=True)       # username of who saved it
+    date_generated = Column(DateTime, default=datetime.utcnow)
+
 # Initialize database tables
 def init_db():
     Base.metadata.create_all(bind=engine)

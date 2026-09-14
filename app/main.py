@@ -1247,10 +1247,10 @@ async def api_update_ai_keys(
                 
                 # Auto-discover best flash model
                 best_model = "gemini-1.5-flash" # fallback
-                if "models/gemini-3.6-flash" in models:
-                    best_model = "gemini-3.6-flash"
-                elif "models/gemini-2.5-flash" in models:
+                if "models/gemini-2.5-flash" in models:
                     best_model = "gemini-2.5-flash"
+                elif "models/gemini-2.0-flash" in models:
+                    best_model = "gemini-2.0-flash"
                 
                 keys_with_models.append({"key": key, "model": best_model})
                 

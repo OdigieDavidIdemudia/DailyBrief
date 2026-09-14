@@ -47,15 +47,68 @@ async def api_tia_export(
         
         # Determine format
         if req.format == "structured_json":
-            out_filename = f"{req.draft.get('report_id', 'TIA').replace('/', '_')}.json"
+            
+            title = req.draft.get('title', '')
+            report_id = req.draft.get('report_id', 'TIA')
+            import re
+            safe_title = re.sub(r'[<>:"/\\|?*]', '', title).strip()
+            if safe_title:
+                base_name = f"{report_id} {safe_title}".replace('/', '_')
+            else:
+                base_name = report_id.replace('/', '_')
+            
+            out_filename = f"{base_name}.json"
             out_path = os.path.join(static_dir, out_filename)
             import json
             with open(out_path, "w") as f:
                 json.dump(req.draft, f, indent=2)
             return FileResponse(out_path, filename=out_filename)
             
+        elif req.format == "csv":
+            
+            title = req.draft.get('title', '')
+            report_id = req.draft.get('report_id', 'TIA')
+            import re
+            safe_title = re.sub(r'[<>:"/\\|?*]', '', title).strip()
+            if safe_title:
+                base_name = f"{report_id} {safe_title}".replace('/', '_')
+            else:
+                base_name = report_id.replace('/', '_')
+            
+            out_filename = f"{base_name}_IOCs.csv"
+            out_path = os.path.join(static_dir, out_filename)
+            import csv
+            with open(out_path, "w", newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Indicator", "Type", "Reputation_Verdict", "Reputation_Scores", "Enrichment_Sources", "Confidence", "Context", "Location", "ISP", "API_Errors", "Report_ID"])
+                for ioc in req.draft.get("iocs", []):
+                    writer.writerow([
+                        ioc.get("value", ""), 
+                        ioc.get("type", ""), 
+                        ioc.get("reputation_verdict", "Not Enriched"),
+                        ioc.get("reputation_scores", ""),
+                        ioc.get("enrichment_sources", ""),
+                        ioc.get("confidence", ""), 
+                        ioc.get("context", ""), 
+                        ioc.get("location", ""),
+                        ioc.get("isp", ""),
+                        ioc.get("api_errors", ""),
+                        req.draft.get("report_id", "")
+                    ])
+            return FileResponse(out_path, filename=out_filename, media_type="text/csv")
+            
         elif req.format == "docx":
-            out_filename = f"{req.draft.get('report_id', 'TIA').replace('/', '_')}.docx"
+            
+            title = req.draft.get('title', '')
+            report_id = req.draft.get('report_id', 'TIA')
+            import re
+            safe_title = re.sub(r'[<>:"/\\|?*]', '', title).strip()
+            if safe_title:
+                base_name = f"{report_id} {safe_title}".replace('/', '_')
+            else:
+                base_name = report_id.replace('/', '_')
+            
+            out_filename = f"{base_name}.docx"
             out_path = os.path.join(static_dir, out_filename)
             render_tia_report(req.draft, out_path)
             return FileResponse(out_path, filename=out_filename)
@@ -65,3 +118,5 @@ async def api_tia_export(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+

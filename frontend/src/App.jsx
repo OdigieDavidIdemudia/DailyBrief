@@ -9,6 +9,8 @@ import HealthCheck from './pages/HealthCheck'
 import ThreatIntelligence from './pages/ThreatIntelligence'
 import AssessmentPipeline from './pages/AssessmentPipeline'
 import KnowledgeSharing from './pages/KnowledgeSharing'
+import TaskTracker from './pages/TaskTracker'
+import Repository from './pages/Repository'
 
 function App() {
   return (
@@ -19,11 +21,13 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="task-tracker" element={<TaskTracker />} />
           <Route path="downtime" element={<Downtime />} />
           <Route path="health-check" element={<HealthCheck />} />
           <Route path="threat-intel" element={<ThreatIntelligence />} />
           <Route path="assessment" element={<AssessmentPipeline />} />
           <Route path="knowledge-sharing" element={<KnowledgeSharing />} />
+          <Route path="repository" element={<Repository />} />
           <Route path="configure" element={<Configure />} />
         </Route>
       </Routes>

@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Trash2, Save, Send, Lock, CheckCircle } from 'lucide-react';
+﻿import React, { useState, useEffect } from 'react';
+import { Settings, Plus, Trash2, Save, Send, Lock, CheckCircle, AlertCircle, Edit3, Key } from 'lucide-react';
 
 const Configure = () => {
-  const [blueprints, setBlueprints] = useState([]);
+    const [blueprints, setBlueprints] = useState([]);
+  
+  const [seprepConfig, setSeprepConfig] = useState({ vt_key: '', abuse_key: '' });
+  const [seprepLocked, setSeprepLocked] = useState(false);
+  const [savingSeprep, setSavingSeprep] = useState(false);
+  
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000);
+  };
   
   // New Blueprint form state
   const [newTitle, setNewTitle] = useState('');
@@ -27,7 +37,19 @@ const Configure = () => {
     fetchBlueprints();
     fetchTelegram();
     fetchAiKeys();
+    fetchSeprep();
   }, []);
+
+  const fetchSeprep = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/settings/seprep', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setSeprepConfig(data);
+        if (data.vt_key || data.abuse_key) setSeprepLocked(true);
+      }
+    } catch(e) {}
+  };
 
   const fetchAiKeys = async () => {
     try {
@@ -50,9 +72,9 @@ const Configure = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail);
-      alert(data.message || 'AI API keys saved!');
+      showToast(data.message || 'AI API keys saved!', 'success');
     } catch (e) {
-      alert(e.message || 'Error saving keys');
+      showToast(e.message || 'Error saving keys', 'error');
     } finally {
       setSavingAi(false);
     }
@@ -104,15 +126,33 @@ const Configure = () => {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(telegramConfig)
     });
-    alert('Telegram settings saved!');
+    showToast('Telegram settings saved!', 'success');
   };
+
+        const handleSaveSeprep = async () => {
+      setSavingSeprep(true);
+      try {
+        await fetch('http://localhost:8000/api/settings/seprep', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify(seprepConfig)
+        });
+        showToast('SepRep Engine settings saved!', 'success');
+        setSeprepLocked(true);
+      } catch(e) {
+        showToast('Failed to save settings.', 'error');
+      } finally {
+        setSavingSeprep(false);
+      }
+    };
 
   const handleTestTelegram = async () => {
     const res = await fetch('http://localhost:8000/api/settings/telegram/test', { credentials: 'include', 
       method: 'POST'
     });
     const msg = await res.json();
-    alert(msg.message || msg.detail || 'Test sent!');
+    showToast(msg.message || msg.detail || 'Test sent!', 'success');
   };
 
   const handleLockRoster = async () => {
@@ -126,10 +166,10 @@ const Configure = () => {
         setLockSuccess(true);
         setTimeout(() => setLockSuccess(false), 3000);
       } else {
-        alert(data.detail || 'Failed to lock roster');
+        showToast(data.detail || 'Failed to lock roster', 'error');
       }
     } catch (e) {
-      alert('Network error');
+      showToast('Network error', 'error');
     } finally {
       setLocking(false);
     }
@@ -161,12 +201,18 @@ const Configure = () => {
           >
             Magnitude AI
           </button>
-          <button 
-            onClick={() => setActiveTab('integrations')}
-            className={`px-4 py-2 font-bold text-sm rounded whitespace-nowrap transition-colors ${activeTab === 'integrations' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}
-          >
-            Integrations
-          </button>
+                      <button 
+              onClick={() => setActiveTab('integrations')}
+              className={`px-4 py-2 font-bold text-sm rounded whitespace-nowrap transition-colors ${activeTab === 'integrations' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}
+            >
+              Integrations
+            </button>
+            <button 
+              onClick={() => setActiveTab('reputation')}
+              className={`px-4 py-2 font-bold text-sm rounded whitespace-nowrap transition-colors ${activeTab === 'reputation' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}
+            >
+              SepRep Engine
+            </button>
         </div>
       </div>
 
@@ -216,7 +262,7 @@ const Configure = () => {
                       <div key={bp.id} className="flex justify-between items-center bg-white border-neo border-neo-border p-3 rounded-neo shadow-neo-sm">
                         <div className="flex flex-col">
                           <span className="font-bold">{bp.title}</span>
-                          <span className="text-xs font-bold text-gray-500 uppercase">{bp.category} � {bp.priority}</span>
+                          <span className="text-xs font-bold text-gray-500 uppercase">{bp.category} ï¿½ {bp.priority}</span>
                         </div>
                         <button onClick={() => handleDeleteBlueprint(bp.id)} className="text-neo-accent hover:text-red-700 bg-red-100 p-2 rounded-neo border-neo border-neo-border">
                           <Trash2 className="w-5 h-5"/>
@@ -353,9 +399,97 @@ const Configure = () => {
             </div>
           </div>
         )}
+              {activeTab === 'reputation' && (
+          <div className="max-w-3xl mx-auto">
+            <div className="neo-card flex flex-col h-fit">
+              <div className="bg-neo-bg border-b-neo border-neo-border p-4">
+                <h2 className="text-xl font-black uppercase tracking-wider">SepRep Engine</h2>
+              </div>
+                              <div className="p-6 space-y-5 bg-white">
+                  <p className="font-bold text-sm text-gray-600">
+                    Configure API keys for the Separation Reputation Engine.
+                  </p>
+                  
+                  {seprepLocked && (seprepConfig.vt_key || seprepConfig.abuse_key) ? (
+                    <div className="space-y-4">
+                      <div className="bg-gray-100 p-4 border-2 border-black rounded flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Key className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-xs font-black uppercase text-gray-500">VirusTotal API Key</p>
+                            <p className="font-mono font-bold tracking-widest text-lg">••••••••••••••••••••••••••••</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-100 p-4 border-2 border-black rounded flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Key className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-xs font-black uppercase text-gray-500">AbuseIPDB API Key</p>
+                            <p className="font-mono font-bold tracking-widest text-lg">••••••••••••••••••••••••••••</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button onClick={() => setSeprepLocked(false)} className="neo-btn bg-white border-2 border-black text-black w-full flex justify-center gap-2 font-bold mt-4">
+                        <Edit3 className="w-4 h-4"/> Edit Keys
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-sm font-black uppercase mb-1">VirusTotal API Key (x-apikey)</label>
+                        <input 
+                          type="password" 
+                          className="neo-input font-mono w-full" 
+                          value={seprepConfig.vt_key || ''}
+                          onChange={e => setSeprepConfig({...seprepConfig, vt_key: e.target.value})}
+                        />
+                      </div>
+      
+                      <div>
+                        <label className="block text-sm font-black uppercase mb-1">AbuseIPDB API Key (Key)</label>
+                        <input 
+                          type="password" 
+                          className="neo-input font-mono w-full" 
+                          value={seprepConfig.abuse_key || ''}
+                          onChange={e => setSeprepConfig({...seprepConfig, abuse_key: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2 mt-6">
+                        {seprepConfig.vt_key && (
+                          <button onClick={() => setSeprepLocked(true)} className="neo-btn bg-white border-2 border-black text-black font-bold flex-1">
+                            Cancel
+                          </button>
+                        )}
+                        <button onClick={handleSaveSeprep} disabled={savingSeprep} className="neo-btn bg-neo-primary text-white flex justify-center gap-2 font-bold disabled:opacity-50 flex-1">
+                          <Save className="w-4 h-4"/> {savingSeprep ? 'Saving...' : 'Save Keys'}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {toast.show && (
+        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+          <div className={`px-6 py-4 rounded-neo border-neo border-neo-border shadow-neo flex items-center gap-3 font-black text-lg ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-neo-green text-black'}`}>
+            {toast.type === 'error' ? <AlertCircle className="w-6 h-6"/> : <CheckCircle className="w-6 h-6"/>}
+            {toast.message}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Configure;
+
+
+
+

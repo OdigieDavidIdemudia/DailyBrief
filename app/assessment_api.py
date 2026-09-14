@@ -4,10 +4,12 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from app.schemas_assessment import (
-    AssessmentState, GenerateFindingRequest, BulkGenerateRequest, ExportDocxRequest, ExportExcelRequest, Finding, ToolAssessment
+    AssessmentState, GenerateFindingRequest, BulkGenerateRequest, ExportDocxRequest, ExportExcelRequest, Finding, ToolAssessment,
+    GenerateStandaloneRequest, StandaloneAssessmentDraft, ExportStandaloneRequest,
+    ExecutiveSummaryDraft, GenerateExSumRequest, ExportExSumRequest
 )
-from app.assessment_ai import generate_finding_text, generate_bulk_findings
-from app.assessment_docx import render_assessment_report
+from app.assessment_ai import generate_finding_text, generate_bulk_findings, generate_standalone_review, generate_executive_summary
+from app.assessment_docx import render_assessment_report, render_standalone_report, render_executive_summary_report
 from app.assessment_excel import append_tool_findings_to_excel, get_dashboard_metrics
 from fastapi.responses import FileResponse
 
@@ -123,3 +125,45 @@ async def get_dashboard(subsidiary_name: str):
     target_excel = os.path.join("reports", subsidiary_name, "Security_Assessment_Master.xlsx")
     metrics = get_dashboard_metrics(target_excel)
     return metrics
+
+
+@router.post("/standalone/generate")
+async def generate_standalone(req: GenerateStandaloneRequest):
+    try:
+        draft = await generate_standalone_review(req)
+        return draft.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/standalone/export")
+async def export_standalone(req: ExportStandaloneRequest):
+    import os
+    from datetime import datetime
+    os.makedirs("local", exist_ok=True)
+    out_path = f"local/Standalone_Assessment_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+    try:
+        render_standalone_report(req.draft, out_path)
+        return FileResponse(out_path, filename=f"GTCO_{req.draft.assessment_name}_Report.docx")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/executive-summary/generate")
+async def generate_exsum(req: GenerateExSumRequest):
+    try:
+        draft = await generate_executive_summary(req)
+        return draft.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/executive-summary/export")
+async def export_exsum(req: ExportExSumRequest):
+    import os
+    from datetime import datetime
+    os.makedirs("local", exist_ok=True)
+    out_path = f"local/Executive_Summary_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+    try:
+        render_executive_summary_report(req.draft, out_path)
+        return FileResponse(out_path, filename=f"GTCO_Executive_Summary.docx")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

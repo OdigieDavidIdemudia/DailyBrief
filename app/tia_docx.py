@@ -1,6 +1,18 @@
 import os
 from docx import Document
 from docx.shared import Pt, RGBColor
+
+from docx.oxml.ns import qn
+
+def disable_update_fields(doc):
+    try:
+        settings = doc.settings.element
+        update_fields = settings.find(qn('w:updateFields'))
+        if update_fields is not None:
+            settings.remove(update_fields)
+    except Exception:
+        pass
+
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -47,6 +59,7 @@ def render_tia_report(data: dict, output_path: str):
         raise FileNotFoundError(f"Template not found at {template_path}")
         
     doc = Document(template_path)
+    disable_update_fields(doc)
     
     # 1. Fill Cover Page & Metadata placeholders
     for p in doc.paragraphs:
@@ -147,7 +160,7 @@ def render_tia_report(data: dict, output_path: str):
                     for item in items:
                         val = item.get('value')
                         ctx = item.get('context')
-                        prov = "[AI-Derived]" if item.get('provenance') == 'magnitude_research' else ""
+                        prov = ""
                         conf = f" (Confidence: {item.get('confidence')})" if item.get('confidence') else ""
                         text = f"{val}"
                         if ctx: text += f" - {ctx}"

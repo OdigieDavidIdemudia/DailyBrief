@@ -16,13 +16,17 @@ class MagnitudeAI:
                 with open(self.keys_file, "r") as f:
                     data = json.load(f)
                 if data:
-                    self.api_keys = [{"key": k, "model": "gemini-3.6-flash"} if isinstance(k, str) else k for k in data]
+                    self.api_keys = [
+                        {"key": k["key"] if isinstance(k, dict) else k, 
+                         "model": "gemini-2.5-flash" if (isinstance(k, dict) and k.get("model") == "gemini-3.6-flash") or not isinstance(k, dict) else k.get("model", "gemini-2.5-flash")} 
+                        for k in data
+                    ]
                     return
             except Exception:
                 pass
         
         keys_str = os.environ.get("GEMINI_API_KEYS", os.environ.get("GEMINI_API_KEY", ""))
-        self.api_keys = [{"key": k.strip(), "model": "gemini-3.6-flash"} for k in keys_str.split(",") if k.strip()]
+        self.api_keys = [{"key": k.strip(), "model": "gemini-2.5-flash"} for k in keys_str.split(",") if k.strip()]
 
     def set_keys(self, keys: List[str]):
         self.api_keys = keys
@@ -51,7 +55,9 @@ class MagnitudeAI:
         for attempt in range(max_retries):
             key_info = self.get_key()
             key_val = key_info["key"] if isinstance(key_info, dict) else key_info
-            model_val = key_info["model"] if isinstance(key_info, dict) else "gemini-3.6-flash"
+            model_val = key_info["model"] if isinstance(key_info, dict) else "gemini-2.5-flash"
+            if model_val == "gemini-3.6-flash":
+                model_val = "gemini-2.5-flash"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_val}:generateContent?key={key_val}"
             
             try:

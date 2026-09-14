@@ -4,8 +4,8 @@ import { ShieldAlert, LogIn, Lock, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('operator_test@tholder.local');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('david.odigie');
+  const [password, setPassword] = useState('Icanbuild2026');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

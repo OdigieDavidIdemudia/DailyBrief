@@ -1,7 +1,153 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Bot, Save, FileText, Send, CheckCircle, Table, Check, Edit3, X, AlertCircle, ShieldCheck, Download } from 'lucide-react';
 
+
+const StandaloneTab = ({ showToast }) => {
+  const [assessmentName, setAssessmentName] = useState('');
+  const [scope, setScope] = useState('');
+  const [rawNotes, setRawNotes] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [draft, setDraft] = useState(null);
+
+  const handleGenerate = async () => {
+    if (!assessmentName || !scope || !rawNotes) { showToast("Please fill all fields.", "error"); return; }
+    setGenerating(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/assessment/standalone/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessment_name: assessmentName, scope, raw_notes: rawNotes })
+      });
+      const data = await res.json();
+      setDraft(data);
+      showToast("Draft generated!", "success");
+    } catch (e) {
+      console.error(e);
+      showToast("Generation failed", "error");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!draft) return;
+    setExporting(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/assessment/standalone/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft })
+      });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GTCO_${draft.assessment_name}_Report.docx`;
+      a.click();
+      showToast("Exported DOCX", "success");
+    } catch (e) {
+      showToast("Export failed", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <div className="flex h-full gap-4">
+      <div className="w-1/2 flex flex-col gap-4">
+        <div className="p-4 bg-white shadow-neo border-2 border-black rounded-neo">
+          <h2 className="font-black mb-4">STANDALONE CONFIGURATION REVIEW</h2>
+          <div className="space-y-4">
+            <input type="text" placeholder="Assessment Name (e.g. Cortex XDR)" value={assessmentName} onChange={e=>setAssessmentName(e.target.value)} className="neo-input w-full" />
+            <input type="text" placeholder="Scope (e.g. Nigeria)" value={scope} onChange={e=>setScope(e.target.value)} className="neo-input w-full" />
+            <textarea placeholder="Paste auditor raw notes..." value={rawNotes} onChange={e=>setRawNotes(e.target.value)} className="neo-input w-full h-64" />
+            <button onClick={handleGenerate} disabled={generating} className="neo-btn bg-black text-white w-full flex justify-center items-center gap-2">
+              {generating ? "Generating..." : "Generate Standalone Report"}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="w-1/2 bg-white shadow-neo border-2 border-black rounded-neo flex flex-col">
+        <div className="p-4 border-b-2 border-black flex justify-between items-center bg-neo-yellow">
+          <div className="font-black flex items-center gap-2"><FileText className="w-5 h-5"/> Live DOCX Preview</div>
+          <button onClick={handleExport} disabled={exporting || !draft} className="neo-btn bg-white px-4 py-1 text-sm disabled:opacity-50">
+            {exporting ? "Exporting..." : "Export DOCX"}
+          </button>
+        </div>
+        <div className="p-4 flex-1 overflow-y-auto bg-gray-200 flex justify-center">
+        <div className="bg-white w-full max-w-[816px] min-h-[1056px] shadow-lg p-12 font-serif text-sm border-4 border-black relative">
+          
+          {/* Cover Section */}
+          <div className="mb-24 mt-12 text-center">
+            <h1 className="text-3xl font-bold mb-2">Guaranty Trust Bank</h1>
+            <h2 className="text-xl font-bold uppercase">{assessmentName || "[ASSESSMENT NAME]"}</h2>
+            <h3 className="text-lg font-bold uppercase">({scope || "[SCOPE]"})</h3>
+          </div>
+
+          <div className="border-b-2 border-black mb-8" />
+
+          {draft ? (
+            <>
+              {/* Introduction & Scope */}
+              <div className="mb-8">
+                <h3 className="font-bold text-lg border-b-2 border-black mb-4">Introduction</h3>
+                <p className="mb-6">{draft.introduction}</p>
+
+                <h3 className="font-bold text-lg border-b-2 border-black mb-4">Scope of Assessment</h3>
+                <p className="mb-2">The scope of the {draft.assessment_name} assessment includes:</p>
+                <ul className="list-disc pl-8 mb-6">
+                  {draft.scope_items.map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+
+              {/* Findings */}
+              {draft.findings.map((f, i) => (
+                <div key={i} className="mb-8">
+                  <h4 className="font-bold text-md mb-4 uppercase">
+                    {i+1}. {f.title} - <span className={`px-1 ${f.severity === 'HIGH' ? 'bg-red-500 text-white' : f.severity === 'MID' ? 'bg-yellow-400 text-black' : 'bg-green-400 text-black'}`}>{f.severity}</span>
+                  </h4>
+                  
+                  <div className="bg-[#2E5FA2] text-white font-bold p-1 pl-2 mb-2">Observations</div>
+                  <ul className="list-disc pl-8 mb-4">
+                    {(f.observations && f.observations.length > 0) ? f.observations.map((obs, j) => <li key={j}>{obs}</li>) : <li>None identified.</li>}
+                  </ul>
+
+                  <div className="bg-[#2E5FA2] text-white font-bold p-1 pl-2 mb-2">Impact</div>
+                  <ul className="list-disc pl-8 mb-4">
+                    {(f.impact && f.impact.length > 0) ? f.impact.map((imp, j) => <li key={j}>{imp}</li>) : <li>None identified.</li>}
+                  </ul>
+
+                  <div className="bg-[#2E5FA2] text-white font-bold p-1 pl-2 mb-2">Recommendations</div>
+                  <ul className="list-disc pl-8 mb-4">
+                    {(f.recommendations && f.recommendations.length > 0) ? f.recommendations.map((rec, j) => <li key={j}>{rec}</li>) : <li>None identified.</li>}
+                  </ul>
+                </div>
+              ))}
+              
+              <h3 className="font-bold text-lg border-b-2 border-black mb-4">CONCLUSION</h3>
+              <p>This concludes the {draft.assessment_name} configuration review.</p>
+            </>
+          ) : (
+            <div className="text-center text-gray-400 mt-32 font-bold uppercase tracking-widest border-2 border-dashed border-gray-300 p-12">
+              [ Assessment Findings Will Populate Here ]
+            </div>
+          )}
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+};
+
 const AssessmentPipeline = () => {
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [state, setState] = useState({
@@ -93,6 +239,7 @@ const AssessmentPipeline = () => {
           >
             Tool Assessment / Micro
           </button>
+            <button onClick={() => setActiveTab('standalone')} className={`px-4 py-2 font-bold text-sm rounded transition-colors ${activeTab === 'standalone' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}>Config Review (Standalone)</button>
         </div>
       </div>
 
@@ -135,8 +282,44 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
     fetchDashboard();
   }, [state.subsidiary.subsidiary_name]);
 
+
+  const [exportingExSum, setExportingExSum] = useState(false);
+  const handleExportExSum = async () => {
+    if (!state.subsidiary.subsidiary_name) { showToast("Enter a subsidiary name first.", "error"); return; }
+    setExportingExSum(true);
+    showToast("AI is generating the Executive Summary. This may take 30 seconds...", "success");
+    try {
+      const res1 = await fetch('http://localhost:8000/api/assessment/executive-summary/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state })
+      });
+      if (!res1.ok) throw new Error("Failed to generate draft");
+      const draft = await res1.json();
+      
+      const res2 = await fetch('http://localhost:8000/api/assessment/executive-summary/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft })
+      });
+      if (!res2.ok) throw new Error("Failed to export DOCX");
+      const blob = await res2.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GTCO_Executive_Summary.docx`;
+      a.click();
+      showToast("Executive Summary downloaded!", "success");
+    } catch(e) {
+      console.error(e);
+      showToast("Failed to generate Executive Summary.", "error");
+    } finally {
+      setExportingExSum(false);
+    }
+  };
+
   const handleExportExcel = async () => {
-    if (!state.subsidiary.subsidiary_name) { alert("Enter a subsidiary name first."); return; }
+    if (!state.subsidiary.subsidiary_name) { showToast("Enter a subsidiary name first.", "error"); return; }
     setExporting(true);
     
     const toolsToExport = Object.values(state.tools).filter(t => t.status === 'ready_to_generate' || t.status === 'logged_to_master' || t.status === 'closed');
@@ -160,7 +343,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
       
       fetchDashboard();
       
-    } catch(e) { console.error(e); alert("Failed to export Excel."); }
+    } catch(e) { console.error(e); showToast("Failed to export Excel.", "error"); }
     finally { setExporting(false); }
   };
 
@@ -186,6 +369,7 @@ const DashboardTab = ({ state, updateSubsidiary, TOOL_OPTIONS }) => {
           <button onClick={handleExportExcel} disabled={exporting || !state.subsidiary.subsidiary_name} className="neo-btn bg-neo-primary text-white flex items-center gap-2 font-bold px-4 py-1.5 text-sm disabled:opacity-50">
             {exporting ? <Bot className="w-4 h-4 animate-spin"/> : <Download className="w-4 h-4"/>} Write Ready Tools to Master Excel
           </button>
+            <button onClick={handleExportExSum} disabled={exportingExSum || !state.subsidiary.subsidiary_name} className="neo-btn bg-black text-white flex items-center gap-2 font-bold px-4 py-1.5 text-sm disabled:opacity-50 ml-2">{exportingExSum ? <Bot className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4"/>} Generate Executive Summary</button>
         </div>
         {dashboardData ? (
           <table className="w-full text-left border-collapse">
@@ -233,7 +417,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
 
   const handleLogObservation = async () => {
     if (inputMode === 'single') {
-      if (!obs.title || !obs.raw_note) { alert("Title and Note are required."); return; }
+      if (!obs.title || !obs.raw_note) { showToast("Title and Note are required.", "error"); return; }
       
       setGenerating(true);
       try {
@@ -250,10 +434,10 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
         const newFindings = [...tool.findings, finding];
         updateTool({ ...tool, findings: newFindings });
         setObs({ ...obs, title: '', raw_note: '' }); // reset form
-      } catch(e) { console.error(e); alert("Failed to generate finding."); }
+      } catch(e) { console.error(e); showToast("Failed to generate finding.", "error"); }
       finally { setGenerating(false); }
     } else {
-      if (!bulkNote.trim()) { alert("Please paste your raw notes."); return; }
+      if (!bulkNote.trim()) { showToast("Please paste your raw notes.", "error"); return; }
       
       setGenerating(true);
       try {
@@ -270,13 +454,13 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
         const newFindings = [...tool.findings, ...findings];
         updateTool({ ...tool, findings: newFindings });
         setBulkNote(''); // reset form
-      } catch(e) { console.error(e); alert("Failed to parse bulk notes."); }
+      } catch(e) { console.error(e); showToast("Failed to parse bulk notes.", "error"); }
       finally { setGenerating(false); }
     }
   };
 
   const handleExportDocx = async () => {
-    if (!subsidiary.subsidiary_name) { alert("Configure subsidiary name in Dashboard first."); return; }
+    if (!subsidiary.subsidiary_name) { showToast("Configure subsidiary name in Dashboard first.", "error"); return; }
     setExportingDocx(true);
     try {
       const res = await fetch('http://localhost:8000/api/assessment/export/docx', {
@@ -294,7 +478,7 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
       a.href = `http://localhost:8000${data.download_url}`;
       a.download = data.download_url.split('/').pop();
       a.click();
-    } catch(e) { console.error(e); alert("Failed to export DOCX."); }
+    } catch(e) { console.error(e); showToast("Failed to export DOCX.", "error"); }
     finally { setExportingDocx(false); }
   };
 
@@ -485,3 +669,4 @@ const AssessmentTab = ({ toolId, setToolId, tool, updateTool, subsidiary, TOOL_O
 };
 
 export default AssessmentPipeline;
+

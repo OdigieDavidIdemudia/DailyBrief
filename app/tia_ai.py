@@ -1,5 +1,6 @@
-import os
+﻿import os
 import json
+from app.seprep_engine import enrich_iocs
 from app.ai import magnitude
 from app.schemas_tia import TIAGenerateRequest, TIAStructuredOutput
 from bs4 import BeautifulSoup
@@ -197,11 +198,19 @@ async def generate_tia_draft(req: TIAGenerateRequest) -> dict:
             research_context += f"\nSOURCE: {url}\nCONTENT:\n{content}\n"
             
     # Stage 3-5: Engine generation
-    sys_prompt = f"""You are Magnitude, the elite AI Threat Intelligence Engine for GTCO.
+    sys_prompt = f"""You are an elite Threat Intelligence Analyst for GTCO.
 You are tasked with analyzing a threat and producing a highly structured Threat Intelligence Advisory.
-Follow the 7-stage processing pipeline strictly. 
-Particularly for IOCs: Do NOT fabricate IOCs. If auto_enrich_iocs is false or you cannot find reliable IOCs, output 'No indicators of compromise...'.
-Every derived IOC must be tagged as 'magnitude_research' and explicitly cited in references.
+Follow the strict 7-stage processing pipeline defined by the JSON schema.
+Ensure you generate an Attack Chain sequence, MITRE ATT&CK mappings, Manual Check code blocks, and an Action Plan.
+
+CRITICAL INSTRUCTIONS:
+1. You MUST generate a concise, professional 'title' for the threat advisory based on the provided input. Do not leave it blank.
+2. The 'date' field MUST be exactly "2026-08-26".
+3. DO NOT include "Magnitude", "AI", or any artificial intelligence branding in the output. The report must appear as if written entirely by a human analyst.
+4. Provide extremely deep, technical, and comprehensive content for the Executive Summary and Threat Landscape based on the input text. Do not generate generic filler content.
+5. If the user provides a raw threat description, actively parse it for the threat mechanism, targeted platforms, and affected distributions.
+
+Particularly for IOCs: Do NOT fabricate IOCs. If auto_enrich_iocs is false or you cannot find reliable IOCs, output an empty list.
 User-supplied IOCs must be tagged as 'user_supplied'.
 {_get_memory_guidelines()}
 """
@@ -238,13 +247,17 @@ Ensure output EXACTLY matches the TIAStructuredOutput schema.
     if "error" in draft:
         return draft
         
+    if req.generation_options and req.generation_options.auto_enrich_iocs:
+        if "iocs" in draft and isinstance(draft["iocs"], list) and len(draft["iocs"]) > 0:
+            draft["iocs"] = enrich_iocs(draft["iocs"])
+        
     try:
         # Post-processing: set report_id, dates if missing
         if not draft.get('report_id'):
             date_str = datetime.now().strftime("%y%m%d")
             seq = str(uuid.uuid4().int)[:3]
             prefix = req.generation_options.report_id_prefix
-            draft['report_id'] = f"{prefix}({date_str}/{seq})"
+            draft['report_id'] = f"{prefix}({date_str}-{seq})"
             
         if not draft.get('date'):
             draft['date'] = datetime.now().strftime("%d %B %Y")
@@ -263,7 +276,7 @@ Ensure output EXACTLY matches the TIAStructuredOutput schema.
         return {"error": f"Failed to post-process model output: {str(e)}"}
 
 async def refine_tia_draft(draft: dict, corrections: str) -> dict:
-    sys_prompt = f"""You are Magnitude. Refine the provided Threat Intelligence Advisory draft based on the user's specific corrections.
+    sys_prompt = f"""You are an elite Threat Intelligence Analyst. Refine the provided Threat Intelligence Advisory draft based on the user's specific corrections.
 Maintain all existing valid data. Only change what is requested or implicitly required by the correction.
 Ensure output remains exactly in the TIAStructuredOutput JSON format.
 {_get_memory_guidelines()}
@@ -283,3 +296,4 @@ Ensure output remains exactly in the TIAStructuredOutput JSON format.
     }
     
     return await magnitude._call_gemini(payload)
+
